@@ -1,0 +1,10 @@
+[
+  {
+    "topic": "customer_success",
+    "playbooks": {
+      "high_risk": "Schedule executive business review within 7 days",
+      "medium_risk": "Proactive check-in with champion and share ROI report",
+      "low_risk": "Share product update newsletter and invite to webinar"
+    }
+  }
+]
