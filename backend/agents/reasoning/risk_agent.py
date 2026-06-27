@@ -1,8 +1,8 @@
 """
 risk_agent.py
 
-Consumes WeakSignalReport and produces
-an enterprise RiskReport.
+Consumes WeakSignalReport and produces an
+Operational Risk Report.
 """
 
 import time
@@ -13,9 +13,9 @@ from models.execution_context import ExecutionContext
 from models.agent_result import AgentResult
 from models.risk_report import (
     RiskReport,
-    RiskLevel,
-    CustomerHealth,
     RiskContribution,
+    OperationalHealth,
+    RiskLevel
 )
 
 from services.weak_signal.schemas import SignalType
@@ -25,35 +25,37 @@ class RiskAssessmentAgent(BaseAgent):
 
     SIGNAL_WEIGHTS = {
 
-        SignalType.BUDGET_CONCERN: 30,
+        SignalType.SUPPLIER_FAILURE: 35,
 
-        SignalType.COMPETITOR_MENTION: 25,
+        SignalType.INVENTORY_SHORTAGE: 30,
 
-        SignalType.NEGATIVE_SENTIMENT: 15,
+        SignalType.PRODUCTION_DELAY: 25,
 
-        SignalType.RENEWAL_URGENCY: 20,
+        SignalType.CYBERSECURITY_RISK: 40,
 
-        SignalType.LOW_ADOPTION: 25,
+        SignalType.REGULATORY_RISK: 20,
 
-        SignalType.EXECUTIVE_ESCALATION: 35,
+        SignalType.NATURAL_DISASTER: 35,
 
-        SignalType.EXPANSION_OPPORTUNITY: -20,
+        SignalType.SINGLE_POINT_OF_FAILURE: 20,
 
-        SignalType.POSITIVE_SENTIMENT: -10,
+        SignalType.CONTRACT_RISK: 15,
+
+        SignalType.LEGAL_ESCALATION: 20,
+
+        SignalType.REPUTATIONAL_RISK: 25
 
     }
 
     @property
     def name(self):
-
         return "RiskAssessmentAgent"
 
     @property
     def description(self):
+        return "Evaluates enterprise operational risk."
 
-        return "Calculates business risk from detected weak signals."
-
-    def execute(self, context):
+    def execute(self, context: ExecutionContext):
 
         start = time.perf_counter()
 
@@ -69,13 +71,15 @@ class RiskAssessmentAgent(BaseAgent):
 
                 status="FAILED",
 
-                message="Weak Signal Report missing."
+                message="WeakSignalReport not found."
 
             )
 
+        score = 0
+
         contributions = []
 
-        score = 0
+        affected_functions = set()
 
         for signal in report.signals:
 
@@ -106,31 +110,75 @@ class RiskAssessmentAgent(BaseAgent):
 
             )
 
-        score = max(0, min(100, score))
+            if signal.signal in [
+                SignalType.SUPPLIER_FAILURE,
+                SignalType.INVENTORY_SHORTAGE,
+                SignalType.PRODUCTION_DELAY
+            ]:
+
+                affected_functions.add("Operations")
+
+            if signal.signal == SignalType.CYBERSECURITY_RISK:
+
+                affected_functions.add("IT")
+
+            if signal.signal == SignalType.LEGAL_ESCALATION:
+
+                affected_functions.add("Legal")
+
+            if signal.signal == SignalType.REGULATORY_RISK:
+
+                affected_functions.add("Compliance")
+
+        score = max(0, min(score, 100))
 
         if score < 25:
 
             level = RiskLevel.LOW
-            health = CustomerHealth.HEALTHY
+            health = OperationalHealth.NORMAL
 
         elif score < 50:
 
             level = RiskLevel.MEDIUM
-            health = CustomerHealth.STABLE
+            health = OperationalHealth.DEGRADED
 
         elif score < 75:
 
             level = RiskLevel.HIGH
-            health = CustomerHealth.AT_RISK
+            health = OperationalHealth.CRITICAL
 
         else:
 
             level = RiskLevel.CRITICAL
-            health = CustomerHealth.CRITICAL
+            health = OperationalHealth.FAILED
+
+        if level == RiskLevel.CRITICAL:
+
+            business_impact = "Immediate disruption to critical business operations."
+
+            recovery = "24-48 Hours"
+
+        elif level == RiskLevel.HIGH:
+
+            business_impact = "High likelihood of operational delays."
+
+            recovery = "2-5 Days"
+
+        elif level == RiskLevel.MEDIUM:
+
+            business_impact = "Moderate operational impact."
+
+            recovery = "Within 1 Week"
+
+        else:
+
+            business_impact = "Minimal operational impact."
+
+            recovery = "No immediate recovery required."
 
         risk_report = RiskReport(
 
-            customer_health=health,
+            operational_health=health,
 
             overall_risk_score=score,
 
@@ -140,15 +188,19 @@ class RiskAssessmentAgent(BaseAgent):
 
             recommendation_priority=level.value,
 
-            explanation=f"Calculated from {len(contributions)} business signals."
+            estimated_business_impact=business_impact,
+
+            estimated_recovery_time=recovery,
+
+            affected_functions=sorted(list(affected_functions)),
+
+            explanation=f"Risk calculated using {len(contributions)} operational signals."
 
         )
 
         context.context_data["risk_report"] = risk_report
 
-        elapsed = (
-            time.perf_counter() - start
-        ) * 1000
+        elapsed = (time.perf_counter() - start) * 1000
 
         result = AgentResult(
 
@@ -158,7 +210,7 @@ class RiskAssessmentAgent(BaseAgent):
 
             execution_time_ms=elapsed,
 
-            message="Risk assessment completed.",
+            message="Operational risk assessment completed.",
 
             data={
 
@@ -166,7 +218,9 @@ class RiskAssessmentAgent(BaseAgent):
 
                 "risk_level": level.value,
 
-                "customer_health": health.value
+                "operational_health": health.value,
+
+                "affected_functions": sorted(list(affected_functions))
 
             }
 

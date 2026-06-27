@@ -1,27 +1,35 @@
 """
 explainability.py
 
-Structured explanation for the final recommendation.
+Executive explainability report for the
+Enterprise Crisis Intelligence Platform.
 """
 
 from typing import List
+
 from pydantic import BaseModel
 
 
 class ExplainabilityReport(BaseModel):
 
-    recommendation: str
+    executive_summary: str
 
-    confidence: float
+    operational_health: str
 
     overall_risk_score: float
 
     overall_risk_level: str
 
-    key_reasons: List[str]
+    key_risks: List[str]
 
-    evidence: List[str]
+    supporting_evidence: List[str]
 
-    contributing_signals: List[str]
+    recommendation_summary: str
 
-    explanation: str
+    affected_business_functions: List[str]
+
+    business_impact: str
+
+    recovery_estimate: str
+
+    reasoning: str

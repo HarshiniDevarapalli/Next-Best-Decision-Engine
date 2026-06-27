@@ -1,106 +1,121 @@
 """
 prompt.py
 
-Prompt templates for Weak Signal Intelligence.
-
-This module contains the system prompt and helper functions
-used by the LLMWeakSignalDetector.
+Prompt templates for the Enterprise Crisis Intelligence Platform.
 """
 
 from textwrap import dedent
 
 
 SYSTEM_PROMPT = dedent("""
-You are an Enterprise Customer Success Intelligence Engine.
+You are an Enterprise Crisis Intelligence Engine.
 
-Your task is to analyze meeting transcripts and identify hidden
-business signals that influence customer retention, expansion,
-and business risk.
+Your responsibility is to analyze enterprise incident reports,
+supplier communications, operational updates, emails,
+risk reports, and crisis documentation to detect hidden
+operational risks that may impact business continuity.
 
-You are NOT summarizing the meeting.
+You are NOT summarizing the incident.
 
-You are detecting latent business signals.
+You are performing operational risk signal extraction.
 
-Analyze the transcript carefully and identify the following signals:
+Detect ONLY the following signals:
 
-1. budget_concern
-2. competitor_mention
-3. negative_sentiment
-4. positive_sentiment
-5. renewal_urgency
-6. low_adoption
-7. expansion_opportunity
-8. executive_escalation
+- supplier_failure
+- inventory_shortage
+- production_delay
+- cybersecurity_risk
+- regulatory_risk
+- natural_disaster
+- single_point_of_failure
+- contract_risk
+- legal_escalation
+- reputational_risk
 
-For EACH detected signal provide:
+For EVERY detected signal provide:
 
 - confidence (0.0 - 1.0)
-- severity (low, medium, high, critical)
+- severity (low | medium | high | critical)
 - explanation
-- supporting evidence quoted directly from the transcript
+- evidence quoted directly from the incident report
 
-If a signal is not present,
-do NOT invent evidence.
+Rules:
 
-Return ONLY valid JSON.
-
-Never return markdown.
-
-Never return explanations outside JSON.
+1. Never invent evidence.
+2. Evidence MUST appear in the incident report.
+3. Confidence must be between 0.0 and 1.0.
+4. Severity must be one of:
+   - low
+   - medium
+   - high
+   - critical
+5. If a signal is not present, DO NOT include it.
+6. Return ONLY valid JSON.
+7. Never return markdown.
+8. Never wrap JSON inside ``` blocks.
+9. Never include any explanation outside the JSON.
 """).strip()
 
 
-def build_prompt(transcript: str) -> str:
+def build_prompt(incident_report: str) -> str:
     """
-    Builds the complete prompt sent to the LLM.
-
-    Parameters
-    ----------
-    transcript : str
-        Meeting transcript.
-
-    Returns
-    -------
-    str
-        Complete prompt.
+    Build the prompt sent to Gemini.
     """
 
     return dedent(f"""
-    Analyze the following customer meeting transcript.
+Analyze the following enterprise incident report.
 
-    Meeting Transcript
-    ------------------
+====================================================
+ENTERPRISE INCIDENT REPORT
+====================================================
 
-    {transcript}
+{incident_report}
 
-    ------------------
+====================================================
 
-    Return JSON in the following format:
+Return JSON using EXACTLY this schema:
 
-    {{
-      "summary": "...",
+{{
+    "summary": "Short summary of the incident.",
 
-      "signals": [
+    "signals": [
 
         {{
-          "signal": "budget_concern",
+            "signal": "supplier_failure",
 
-          "confidence": 0.92,
+            "confidence": 0.97,
 
-          "severity": "high",
+            "severity": "critical",
 
-          "explanation": "...",
+            "explanation": "The primary supplier unexpectedly ceased operations.",
 
-          "evidence": [
-            {{
-              "text": "...",
-              "confidence": 0.95
-            }}
-          ]
+            "evidence": [
+                {{
+                    "text": "Our primary supplier shut down operations following a factory fire.",
+
+                    "confidence": 0.99
+                }}
+            ]
         }}
 
-      ]
-    }}
+    ]
+}}
 
-    Return ONLY JSON.
-    """).strip()
+Important Rules:
+
+- Return ONLY JSON.
+- Never return markdown.
+- Never use ```json.
+- Never add explanations outside JSON.
+- Never omit required fields.
+- confidence must always be between 0.0 and 1.0.
+- evidence confidence must always be between 0.0 and 1.0.
+
+If NO signals are detected, return:
+
+{{
+    "summary": "No significant operational risks detected.",
+
+    "signals": []
+}}
+""").strip()

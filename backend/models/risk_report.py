@@ -1,7 +1,8 @@
 """
 risk_report.py
 
-Structured output produced by the RiskAssessmentAgent.
+Structured output produced by the
+Operational Risk Assessment Agent.
 """
 
 from enum import Enum
@@ -12,6 +13,13 @@ from pydantic import BaseModel, Field
 from services.weak_signal.schemas import SignalType
 
 
+class OperationalHealth(str, Enum):
+    NORMAL = "NORMAL"
+    DEGRADED = "DEGRADED"
+    CRITICAL = "CRITICAL"
+    FAILED = "FAILED"
+
+
 class RiskLevel(str, Enum):
     LOW = "LOW"
     MEDIUM = "MEDIUM"
@@ -19,14 +27,11 @@ class RiskLevel(str, Enum):
     CRITICAL = "CRITICAL"
 
 
-class CustomerHealth(str, Enum):
-    HEALTHY = "HEALTHY"
-    STABLE = "STABLE"
-    AT_RISK = "AT_RISK"
-    CRITICAL = "CRITICAL"
-
-
 class RiskContribution(BaseModel):
+    """
+    Describes how a detected signal contributed
+    to the overall operational risk score.
+    """
 
     signal: SignalType
 
@@ -40,8 +45,11 @@ class RiskContribution(BaseModel):
 
 
 class RiskReport(BaseModel):
+    """
+    Final output of the Operational Risk Assessment Agent.
+    """
 
-    customer_health: CustomerHealth
+    operational_health: OperationalHealth
 
     overall_risk_score: float = Field(
         ge=0,
@@ -51,6 +59,13 @@ class RiskReport(BaseModel):
     overall_risk_level: RiskLevel
 
     contributing_signals: List[RiskContribution]
+
+
+    estimated_business_impact: str
+
+    estimated_recovery_time: str
+
+    affected_functions: List[str]
 
     recommendation_priority: str
 

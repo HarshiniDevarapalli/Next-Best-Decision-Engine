@@ -1,8 +1,7 @@
 """
 recommendation_agent.py
 
-Generates the Next Best Decision based on
-the Risk Report.
+Generates an enterprise Crisis Response Plan.
 """
 
 import time
@@ -11,11 +10,11 @@ from agents.base_agent import BaseAgent
 
 from models.execution_context import ExecutionContext
 from models.agent_result import AgentResult
-from models.risk_report import RiskLevel
 from models.recommendation import (
     RecommendationReport,
-    RecommendationType,
+    Priority
 )
+from models.risk_report import RiskLevel
 
 
 class RecommendationAgent(BaseAgent):
@@ -26,7 +25,7 @@ class RecommendationAgent(BaseAgent):
 
     @property
     def description(self):
-        return "Generates the Next Best Decision."
+        return "Generates an enterprise crisis response plan."
 
     def execute(self, context):
 
@@ -37,126 +36,187 @@ class RecommendationAgent(BaseAgent):
         if risk is None:
 
             return AgentResult(
-
                 agent_name=self.name,
-
                 status="FAILED",
-
-                message="Risk Report not found."
-
+                message="Risk report not found."
             )
 
         if risk.overall_risk_level == RiskLevel.CRITICAL:
 
-            recommendation = RecommendationReport(
+            report = RecommendationReport(
 
-                recommendation=RecommendationType.EXECUTIVE_REVIEW,
+                title="Activate Enterprise Crisis Response",
 
-                confidence=0.96,
+                priority=Priority.CRITICAL,
 
-                priority="CRITICAL",
+                confidence=0.97,
 
-                expected_business_impact=(
-                    "Prevent customer churn "
-                    "through executive intervention."
-                ),
+                summary="Critical operational disruption detected requiring immediate intervention.",
 
-                reasoning=[
-                    "Critical customer health.",
-                    "Multiple high-impact risk signals detected.",
-                    "Immediate executive attention required."
+                immediate_actions=[
+
+                    "Activate approved backup supplier.",
+
+                    "Notify executive crisis committee.",
+
+                    "Escalate to procurement leadership.",
+
+                    "Freeze non-essential procurement changes."
+
                 ],
 
-                next_steps=[
-                    "Schedule executive meeting.",
-                    "Assign senior customer success manager.",
-                    "Prepare recovery plan."
-                ]
+                short_term_actions=[
+
+                    "Validate inventory availability.",
+
+                    "Review supplier contracts.",
+
+                    "Coordinate with logistics."
+
+                ],
+
+                long_term_actions=[
+
+                    "Diversify supplier network.",
+
+                    "Reduce single points of failure.",
+
+                    "Update business continuity strategy."
+
+                ],
+
+                stakeholders_to_notify=[
+
+                    "CEO",
+
+                    "COO",
+
+                    "Procurement",
+
+                    "Legal",
+
+                    "Operations"
+
+                ],
+
+                business_continuity_actions=[
+
+                    "Activate Business Continuity Plan.",
+
+                    "Monitor recovery dashboard.",
+
+                    "Schedule crisis review every 4 hours."
+
+                ],
+
+                expected_business_outcome="Production downtime minimized through rapid supplier transition."
 
             )
 
         elif risk.overall_risk_level == RiskLevel.HIGH:
 
-            recommendation = RecommendationReport(
+            report = RecommendationReport(
 
-                recommendation=RecommendationType.SUPPORT_ESCALATION,
+                title="High Risk Operational Response",
 
-                confidence=0.91,
+                priority=Priority.HIGH,
 
-                priority="HIGH",
+                confidence=0.93,
 
-                expected_business_impact=(
-                    "Reduce churn risk."
-                ),
+                summary="High operational risk requiring coordinated response.",
 
-                reasoning=[
-                    "High overall risk score.",
-                    "Customer requires proactive engagement."
+                immediate_actions=[
+                    "Notify procurement.",
+                    "Identify backup vendors."
                 ],
 
-                next_steps=[
-                    "Escalate support case.",
-                    "Review adoption metrics."
-                ]
+                short_term_actions=[
+                    "Review inventory.",
+                    "Assess downstream impact."
+                ],
+
+                long_term_actions=[
+                    "Strengthen supplier resilience."
+                ],
+
+                stakeholders_to_notify=[
+                    "Operations",
+                    "Procurement"
+                ],
+
+                business_continuity_actions=[
+                    "Increase monitoring."
+                ],
+
+                expected_business_outcome="Reduce likelihood of operational disruption."
 
             )
 
         elif risk.overall_risk_level == RiskLevel.MEDIUM:
 
-            recommendation = RecommendationReport(
+            report = RecommendationReport(
 
-                recommendation=RecommendationType.CUSTOMER_TRAINING,
+                title="Preventive Risk Mitigation",
 
-                confidence=0.84,
+                priority=Priority.MEDIUM,
 
-                priority="MEDIUM",
+                confidence=0.89,
 
-                expected_business_impact=(
-                    "Increase adoption and product engagement."
-                ),
+                summary="Operational risks detected but currently manageable.",
 
-                reasoning=[
-                    "Customer is stable but showing warning signs."
+                immediate_actions=[
+                    "Monitor affected systems."
                 ],
 
-                next_steps=[
-                    "Schedule onboarding session.",
-                    "Share best practices."
-                ]
+                short_term_actions=[
+                    "Review contingency plans."
+                ],
+
+                long_term_actions=[
+                    "Conduct resilience assessment."
+                ],
+
+                stakeholders_to_notify=[
+                    "Operations Manager"
+                ],
+
+                business_continuity_actions=[
+                    "Maintain readiness."
+                ],
+
+                expected_business_outcome="Prevent escalation."
 
             )
 
         else:
 
-            recommendation = RecommendationReport(
+            report = RecommendationReport(
 
-                recommendation=RecommendationType.NO_ACTION,
+                title="Normal Operations",
 
-                confidence=0.95,
+                priority=Priority.LOW,
 
-                priority="LOW",
+                confidence=0.98,
 
-                expected_business_impact=(
-                    "Maintain healthy relationship."
-                ),
+                summary="No significant operational risks detected.",
 
-                reasoning=[
-                    "Customer health is strong."
-                ],
+                immediate_actions=[],
 
-                next_steps=[
-                    "Continue regular engagement."
-                ]
+                short_term_actions=[],
+
+                long_term_actions=[],
+
+                stakeholders_to_notify=[],
+
+                business_continuity_actions=[],
+
+                expected_business_outcome="Continue normal business operations."
 
             )
 
-        context.context_data[
-            "recommendation_report"
-        ] = recommendation
+        context.context_data["recommendation_report"] = report
 
-        elapsed = (
-            time.perf_counter() - start
-        ) * 1000
+        elapsed = (time.perf_counter() - start) * 1000
 
         result = AgentResult(
 
@@ -166,15 +226,15 @@ class RecommendationAgent(BaseAgent):
 
             execution_time_ms=elapsed,
 
-            message="Recommendation generated.",
+            message="Crisis response plan generated.",
 
             data={
 
-                "recommendation": recommendation.recommendation.value,
+                "title": report.title,
 
-                "confidence": recommendation.confidence,
+                "priority": report.priority.value,
 
-                "priority": recommendation.priority
+                "confidence": report.confidence
 
             }
 

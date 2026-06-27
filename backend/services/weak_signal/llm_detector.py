@@ -1,79 +1,45 @@
 """
 llm_detector.py
 
-LLM-backed Weak Signal detector.
+LLM-backed Weak Signal Detector.
 
-Current Provider:
-    - Gemini
+The detector is responsible only for:
+1. Building prompts
+2. Calling the LLM client
+3. Parsing the response
 
-Future Providers:
-    - Groq
-    - OpenAI
-    - Claude
-    - DistilBERT
-
-The rest of the platform should NEVER know
-which provider is being used.
+The actual LLM provider (Gemini today, Groq tomorrow)
+is hidden behind GeminiClient.
 """
 
-import json
-import os
+
 import time
 
-from dotenv import load_dotenv
+from services.llm.gemini_client import GeminiClient
 
 from .base_detector import WeakSignalDetector
 from .prompt import SYSTEM_PROMPT, build_prompt
 from .parser import WeakSignalParser
-
 from .schemas import WeakSignalReport
-
-load_dotenv()
 
 
 class LLMWeakSignalDetector(WeakSignalDetector):
 
     def __init__(self):
 
-        self.provider = os.getenv("LLM_PROVIDER", "gemini").lower()
-
-        self.model = os.getenv(
-            "LLM_MODEL",
-            "gemini-2.5-flash"
-        )
-
-        if self.provider == "gemini":
-
-            from google import genai
-
-            self.client = genai.Client(
-                api_key=os.getenv("GEMINI_API_KEY")
-            )
-
-        elif self.provider == "groq":
-
-            from groq import Groq
-
-            self.client = Groq(
-                api_key=os.getenv("GROQ_API_KEY")
-            )
-
-        else:
-
-            raise ValueError(
-                f"Unsupported provider: {self.provider}"
-            )
+        self.client = GeminiClient()
 
     @property
     def detector_name(self):
 
-        return f"{self.provider.upper()} Weak Signal Detector"
+        return "Gemini Weak Signal Detector"
 
     @property
     def model_version(self):
 
-        return self.model
+        return self.client.model
 
+    
     def predict(
         self,
         transcript: str
@@ -81,54 +47,13 @@ class LLMWeakSignalDetector(WeakSignalDetector):
 
         start = time.perf_counter()
 
-        prompt = build_prompt(transcript)
+        raw_response = self.client.generate_json(
 
-        if self.provider == "gemini":
+            system_prompt=SYSTEM_PROMPT,
 
-            response = self.client.models.generate_content(
+            user_prompt=build_prompt(transcript)
 
-                model=self.model,
-
-                contents=[
-                    SYSTEM_PROMPT,
-                    prompt
-                ]
-
-            )
-
-            raw_output = response.text
-
-        elif self.provider == "groq":
-
-            response = self.client.chat.completions.create(
-
-                model=self.model,
-
-                messages=[
-
-                    {
-                        "role": "system",
-                        "content": SYSTEM_PROMPT
-                    },
-
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-
-                ],
-
-                temperature=0.2
-
-            )
-
-            raw_output = response.choices[0].message.content
-
-        else:
-
-            raise RuntimeError(
-                "Provider not initialized."
-            )
+        )
 
         processing_time = (
             time.perf_counter() - start
@@ -136,7 +61,7 @@ class LLMWeakSignalDetector(WeakSignalDetector):
 
         return WeakSignalParser.parse(
 
-            response=raw_output,
+            response=raw_response,
 
             detector_name=self.detector_name,
 
