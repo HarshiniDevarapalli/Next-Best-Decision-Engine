@@ -12,7 +12,8 @@ class Planner:
     Responsibilities:
     - Load workflow configuration
     - Retrieve required agents from the registry
-    - Execute agents in sequence
+    - Execute enabled agents in sequence
+    - Maintain the shared ExecutionContext
     - Return the updated ExecutionContext
 
     The Planner contains NO business logic.
@@ -42,16 +43,22 @@ class Planner:
         )
 
         # Execute agents in workflow order
-        for agent_name in workflow.agents:
+        # Execute agents in workflow order
+        for agent_config in workflow.agents:
 
-            agent = self.agent_registry.get(agent_name)
+            # Skip disabled agents
+            if not agent_config.enabled:
+                continue
 
+            # Get the agent (will raise KeyError if not registered)
+            agent = self.agent_registry.get(agent_config.name)
+
+            # Execute the agent
             result = agent.execute(context)
 
+            # Store results
             context.agent_results.append(result)
-
-            # Store output in shared context
-            context.context_data[agent_name] = result.data
+            context.context_data[agent_config.name] = result.data
 
         context.status = "SUCCESS"
 
