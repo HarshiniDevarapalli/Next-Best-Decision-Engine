@@ -1,0 +1,16 @@
+[
+  {
+    "case_id": "incident_001",
+    "incident_date": "2024-09-18",
+    "incident_type": "Supplier Factory Fire",
+    "resolution": "Activated alternate supplier and increased inventory levels.",
+    "downtime_days": 3
+  },
+  {
+    "case_id": "incident_001",
+    "incident_date": "2025-05-11",
+    "incident_type": "Shipping Delay",
+    "resolution": "Expedited shipments through alternate logistics partner.",
+    "downtime_days": 1
+  }
+]

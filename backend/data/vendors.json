@@ -1,0 +1,18 @@
+[
+  {
+    "case_id": "incident_001",
+    "vendor_name": "XYZ Electronics",
+    "approved_vendor": true,
+    "lead_time_days": 6,
+    "capacity_available": true,
+    "estimated_cost_increase": "8%"
+  },
+  {
+    "case_id": "incident_001",
+    "vendor_name": "Global Chips Inc.",
+    "approved_vendor": false,
+    "lead_time_days": 12,
+    "capacity_available": true,
+    "estimated_cost_increase": "5%"
+  }
+]

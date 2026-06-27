@@ -1,7 +1,9 @@
 [
   {
-    "customer_id": "cust_001",
-    "headline": "Acme Corp announces company-wide layoffs.",
-    "impact": "high"
+    "case_id": "incident_001",
+    "headline": "Major earthquake disrupts semiconductor manufacturing in Taiwan.",
+    "impact": "Critical",
+    "source": "Reuters",
+    "summary": "Several supplier factories have halted production due to infrastructure damage."
   }
 ]
