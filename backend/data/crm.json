@@ -1,0 +1,11 @@
+[
+  {
+    "customer_id": "cust_001",
+    "company": "Acme Corp",
+    "renewal_days": 18,
+    "health_score": 62,
+    "contract_value": 120000,
+    "usage_percent": 48,
+    "support_tickets": 12
+  }
+]
