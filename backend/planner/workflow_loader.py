@@ -1,23 +1,51 @@
 import json
 from pathlib import Path
 
-from app.config import settings
-from models.workflow import WorkflowDefinition
+from models.workflow import Workflow
 
 
 class WorkflowLoader:
-    def __init__(self, workflows_dir: Path | None = None) -> None:
-        self.workflows_dir = workflows_dir or settings.workflows_dir
+    """
+    Loads workflow configurations from JSON files.
+    """
 
-    def load(self, workflow_name: str) -> WorkflowDefinition:
-        path = self.workflows_dir / f"{workflow_name}.json"
-        if not path.exists():
-            raise FileNotFoundError(f"Workflow not found: {workflow_name}")
+    def __init__(self, workflow_directory: str = "data/workflows"):
+        self.workflow_directory = Path(workflow_directory)
 
-        with path.open() as f:
-            data = json.load(f)
+    def load_workflow(self, workflow_name: str) -> Workflow:
+        """
+        Load and validate a workflow configuration.
 
-        return WorkflowDefinition(**data)
+        Args:
+            workflow_name (str): Name of the workflow.
 
-    def list_workflows(self) -> list[str]:
-        return [p.stem for p in self.workflows_dir.glob("*.json")]
+        Returns:
+            Workflow: Validated workflow object.
+
+        Raises:
+            FileNotFoundError: If workflow JSON does not exist.
+            ValueError: If JSON is invalid.
+        """
+
+        workflow_file = self.workflow_directory / f"{workflow_name}.json"
+
+        if not workflow_file.exists():
+            raise FileNotFoundError(
+                f"Workflow '{workflow_name}' not found."
+            )
+
+        try:
+            with open(workflow_file, "r", encoding="utf-8") as file:
+                workflow_data = json.load(file)
+
+            return Workflow(**workflow_data)
+
+        except json.JSONDecodeError as e:
+            raise ValueError(
+                f"Invalid JSON in workflow '{workflow_name}': {e}"
+            )
+
+        except Exception as e:
+            raise ValueError(
+                f"Failed to load workflow '{workflow_name}': {e}"
+            )
