@@ -3,7 +3,7 @@ from pathlib import Path
 
 from agents.base_agent import BaseAgent
 from models.execution_context import ExecutionContext
-from models.responses import Response
+from models.agent_result import AgentResult
 
 
 class KnowledgeAgent(BaseAgent):
@@ -16,13 +16,15 @@ class KnowledgeAgent(BaseAgent):
     def description(self):
         return "Retrieve organizational knowledge."
 
-    def execute(self, context: ExecutionContext) -> Response:
+    def execute(self, context: ExecutionContext) -> AgentResult:
 
-        with open(Path("data/knowledge.json"), "r") as file:
-            data = json.load(file)
+        with open("data/knowledge.json") as file:
+            knowledge = json.load(file)
 
-        return Response(
+        return AgentResult(
             agent_name=self.name,
             status="SUCCESS",
-            data=data
+            data={
+                "knowledge": knowledge
+            }
         )

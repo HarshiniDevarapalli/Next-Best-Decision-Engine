@@ -3,7 +3,7 @@ from pathlib import Path
 
 from agents.base_agent import BaseAgent
 from models.execution_context import ExecutionContext
-from models.responses import Response
+from models.agent_result import AgentResult
 
 
 class MeetingAgent(BaseAgent):
@@ -16,13 +16,21 @@ class MeetingAgent(BaseAgent):
     def description(self):
         return "Read meeting transcripts."
 
-    def execute(self, context: ExecutionContext) -> Response:
+    def execute(self, context: ExecutionContext) -> AgentResult:
 
-        with open(Path("data/meetings.json"), "r") as file:
-            data = json.load(file)
+        with open("data/meetings.json") as file:
+            meetings = json.load(file)
 
-        return Response(
+        customer_meetings = [
+            meeting
+            for meeting in meetings
+            if meeting["customer_id"] == context.customer_id
+        ]
+
+        return AgentResult(
             agent_name=self.name,
             status="SUCCESS",
-            data=data
+            data={
+                "meetings": customer_meetings
+            }
         )

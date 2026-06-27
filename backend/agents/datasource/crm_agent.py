@@ -3,7 +3,7 @@ from pathlib import Path
 
 from agents.base_agent import BaseAgent
 from models.execution_context import ExecutionContext
-from models.responses import Response
+from models.agent_result import AgentResult
 
 
 class CRMAgent(BaseAgent):
@@ -16,15 +16,24 @@ class CRMAgent(BaseAgent):
     def description(self):
         return "Fetch customer information from CRM."
 
-    def execute(self, context: ExecutionContext) -> Response:
+    def execute(self, context: ExecutionContext) -> AgentResult:
 
-        file_path = Path("data/crm.json")
+        data_path = Path("data/crm.json")
 
-        with open(file_path, "r") as file:
-            data = json.load(file)
+        with open(data_path, "r") as f:
+            customers = json.load(f)
 
-        return Response(
+        customer = next(
+            (
+                c
+                for c in customers
+                if c["customer_id"] == context.customer_id
+            ),
+            {}
+        )
+
+        return AgentResult(
             agent_name=self.name,
             status="SUCCESS",
-            data=data
+            data=customer
         )
