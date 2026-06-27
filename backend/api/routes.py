@@ -6,10 +6,12 @@ from planner.workflow_loader import WorkflowLoader
 from registry.registry import AgentRegistry
 
 # Import dummy agents
-from agents.datasource.crm_agent import CRMAgent
-from agents.datasource.meeting_agent import MeetingAgent
-from agents.datasource.news_agent import NewsAgent
-from agents.datasource.knowledge_agent import KnowledgeAgent
+from backend.agents.datasource.supplier_contract_agent import SupplierContractAgent
+from backend.agents.datasource.inventory_agent import InventoryAgent
+from backend.agents.datasource.vendor_agent import VendorAgent
+from backend.agents.datasource.policy_agent import PolicyAgent
+from backend.agents.datasource.news_agent import NewsAgent
+from backend.agents.datasource.incident_history_agent import IncidentHistoryAgent
 
 router = APIRouter()
 
@@ -19,10 +21,12 @@ workflow_loader = WorkflowLoader()
 
 registry = AgentRegistry()
 
-registry.register(CRMAgent())
-registry.register(MeetingAgent())
+registry.register(SupplierContractAgent())
+registry.register(InventoryAgent())
+registry.register(VendorAgent())
+registry.register(PolicyAgent())
 registry.register(NewsAgent())
-registry.register(KnowledgeAgent())
+registry.register(IncidentHistoryAgent())
 
 planner = Planner(workflow_loader, registry)
 
