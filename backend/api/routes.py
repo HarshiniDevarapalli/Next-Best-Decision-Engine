@@ -33,7 +33,7 @@ def run_workflow(request: WorkflowRequest):
 
     context = planner.execute_workflow(
         workflow_name=request.workflow,
-        customer_id=request.customer_id
+        case_id=request.case_id
     )
 
     return context

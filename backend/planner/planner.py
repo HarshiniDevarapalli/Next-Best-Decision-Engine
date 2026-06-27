@@ -30,7 +30,7 @@ class Planner:
     def execute_workflow(
         self,
         workflow_name: str,
-        customer_id: str
+        case_id: str
     ) -> ExecutionContext:
 
         # Load workflow configuration
@@ -38,9 +38,9 @@ class Planner:
 
         # Create execution context
         context = ExecutionContext(
-            workflow_name=workflow.workflow_name,
-            customer_id=customer_id
-        )
+        workflow_name=workflow.workflow_name,
+        case_id=case_id
+    )   
 
         # Execute agents in workflow order
         # Execute agents in workflow order
