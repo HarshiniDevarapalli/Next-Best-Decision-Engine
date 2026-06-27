@@ -1,238 +1,205 @@
 # Next Best Decision Engine (NBDE)
 
-An AI-powered multi-agent decision intelligence platform that assists Customer Success teams by analyzing customer data, identifying risks, generating recommendations, and explaining every decision through an extensible workflow engine.
+> **A Reusable Agentic Decision Intelligence Platform for Enterprise Workflows**
+
+NBDE is a modular multi-agent workflow orchestration platform that helps organizations make high-quality decisions under uncertainty by combining information from multiple enterprise data sources, reasoning over that information, and generating explainable recommendations.
+
+The platform is **domain-independent**. While this repository demonstrates its capabilities using an **Enterprise Crisis Intelligence** workflow, the same architecture can be reused for any enterprise decision-making problem by simply defining a new workflow and plugging in different agents.
 
 ---
 
-## Overview
+# Why NBDE?
 
-The **Next Best Decision Engine (NBDE)** is designed to automate customer success decision-making using a modular multi-agent architecture.
+Modern enterprises face decisions that require information from multiple disconnected systems.
 
-Instead of hardcoding business logic, NBDE executes configurable workflows where each agent performs a specific task. Data collection agents gather customer information, reasoning agents analyze the collected data, and the system produces transparent, explainable recommendations.
+Examples include:
 
-The platform is designed to be scalable, extensible, and model-agnostic, allowing traditional rule-based logic to be replaced by machine learning models in the future.
+- Supply chain disruptions
+- Mergers & Acquisitions
+- Customer Success
+- Regulatory Compliance
+- Fraud Investigation
+- IT Incident Response
+- Procurement
+- Healthcare Operations
 
----
-
-# Project Goals
-
-- Build a configurable workflow execution platform
-- Support modular AI agents
-- Enable explainable decision making
-- Allow easy integration of ML models
-- Provide an interactive dashboard for Customer Success teams
-
----
-
-# Business Use Case
-
-Customer Success Managers often need to analyze information scattered across multiple systems:
-
-- CRM records
-- Meeting notes
-- Product adoption metrics
-- Customer health scores
-- Company news
-- Internal knowledge base
-
-NBDE automatically combines all these sources to recommend the **next best action** for every customer.
-
-Example recommendations:
-
-- Schedule an Executive Business Review
-- Offer pricing flexibility
-- Escalate churn risk
-- Engage executive stakeholders
-- Recommend product training
+Instead of manually collecting information from multiple sources, NBDE orchestrates specialized agents that gather relevant information, analyze it, assess risks, recommend actions, and explain every recommendation.
 
 ---
 
-# System Architecture
+# Demo Use Case
+
+This project demonstrates the platform using an **Enterprise Crisis Intelligence** workflow.
+
+### Scenario
+
+A critical supplier unexpectedly shuts down operations.
+
+The platform gathers information from multiple enterprise sources:
+
+- Supplier Contracts
+- Inventory Status
+- Alternative Vendors
+- Enterprise Policies
+- External News
+- Historical Incident Reports
+
+It then reasons over this information to answer questions such as:
+
+- Should production continue?
+- Should procurement activate a backup supplier?
+- Should legal teams be notified?
+- Should customers be informed?
+- What is the operational risk?
+- Why is this recommendation being made?
+
+This workflow is only an example implementation of the platform.
+
+---
+
+# Platform Reusability
+
+One of the core goals of NBDE is to separate **business logic** from **workflow orchestration**.
+
+The workflow engine never contains domain-specific logic.
+
+Instead, every business domain is represented through configurable workflows and modular agents.
+
+For example:
+
+### Enterprise Crisis Response
 
 ```
-                React Dashboard
-                        │
-                        ▼
-                FastAPI Backend
-                        │
-                        ▼
+Supplier Contracts
+↓
+Inventory
+↓
+Vendors
+↓
+Policies
+↓
+News
+↓
+Incident History
+↓
+Risk Assessment
+↓
+Recommendation
+```
+
+### Customer Success
+
+```
+CRM
+↓
+Meetings
+↓
+Product Usage
+↓
+Knowledge Base
+↓
+Customer Health
+↓
+Recommendation
+```
+
+### M&A Due Diligence
+
+```
+Financial Reports
+↓
+Legal Documents
+↓
+Compliance
+↓
+Cybersecurity
+↓
+Vendor Contracts
+↓
+Risk Assessment
+```
+
+The **Planner**, **Workflow Loader**, **Registry**, and **Execution Context** remain exactly the same.
+
+Only the workflow configuration changes.
+
+---
+
+# Architecture
+
+```
+                        User
+                          │
+                          ▼
+                  React Dashboard
+                          │
+                          ▼
+                  FastAPI Backend
+                          │
+                          ▼
             Workflow Orchestration Engine
-        ┌─────────────────────────────────┐
-        │ Planner                         │
-        │ Workflow Loader                 │
-        │ Agent Registry                  │
-        │ Execution Context               │
-        └─────────────────────────────────┘
-                        │
-                        ▼
-                Plugin Agent Layer
-      CRM → Meeting → News → Knowledge
-          → Weak Signal → Risk
-      → Recommendation → Explainability
-                        │
-                        ▼
+        ┌──────────────────────────────┐
+        │ Planner                      │
+        │ Workflow Loader              │
+        │ Agent Registry               │
+        │ Execution Context            │
+        └──────────────────────────────┘
+                          │
+                          ▼
+                 Configurable Workflow
+                          │
+                          ▼
+              Domain-Specific Agents
+                          │
+                          ▼
                Shared Execution Context
-                        │
-                        ▼
-                 JSON API Response
+                          │
+                          ▼
+                Decision Recommendations
 ```
 
 ---
 
-# Project Structure
+# Key Features
 
-Next-Best-Decision-Agent/
-│
-├── README.md
-├── LICENSE
-├── .gitignore
-│
-├── backend/
-│   │
-│   ├── app/
-│   │   └── main.py
-│   │
-│   ├── api/
-│   │   └── routes.py
-│   │
-│   ├── agents/
-│   │   ├── base_agent.py
-│   │   │
-│   │   ├── datasource/
-│   │   │   ├── crm_agent.py
-│   │   │   ├── meeting_agent.py
-│   │   │   ├── news_agent.py
-│   │   │   └── knowledge_agent.py
-│   │   │
-│   │   └── reasoning/
-│   │       ├── weak_signal_agent.py
-│   │       ├── risk_agent.py
-│   │       ├── recommendation_agent.py
-│   │       └── explainability_agent.py
-│   │
-│   ├── planner/
-│   │   ├── planner.py
-│   │   └── workflow_loader.py
-│   │
-│   ├── registry/
-│   │   └── registry.py
-│   │
-│   ├── models/
-│   │   ├── workflow.py
-│   │   ├── execution_context.py
-│   │   ├── agent_result.py
-│   │   └── request.py
-│   │
-│   ├── workflows/
-│   │   └── customer_success.json
-│   │
-│   ├── data/
-│   │   ├── crm.json
-│   │   ├── meetings.json
-│   │   ├── news.json
-│   │   └── knowledge.json
-│   │
-│   ├── utils/
-│   │   ├── logger.py
-│   │   └── helpers.py
-│   │
-│   ├── tests/
-│   │   ├── test_planner.py
-│   │   ├── test_registry.py
-│   │   ├── test_workflow_loader.py
-│   │   └── test_agents.py
-│   │
-│   └── requirements.txt
-│
-├── frontend/
-│   │
-│   ├── public/
-│   │
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Dashboard/
-│   │   │   ├── WhatIfSimulator/
-│   │   │   ├── ShadowMode/
-│   │   │   ├── DecisionTimeline/
-│   │   │   └── Explainability/
-│   │   │
-│   │   ├── pages/
-│   │   │   └── Home.jsx
-│   │   │
-│   │   ├── services/
-│   │   │   └── api.js
-│   │   │
-│   │   ├── hooks/
-│   │   │
-│   │   ├── assets/
-│   │   │
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   │
-│   ├── package.json
-│   └── vite.config.js
-│
-├── ml/
-│   │
-│   ├── datasets/
-│   │   ├── synthetic_meetings.json
-│   │   └── labeled_signals.json
-│   │
-│   ├── training/
-│   │   ├── train_weak_signal.py
-│   │   ├── train_risk.py
-│   │   └── evaluate.py
-│   │
-│   ├── inference/
-│   │   ├── weak_signal_model.py
-│   │   ├── risk_model.py
-│   │   └── recommendation_model.py
-│   │
-│   └── models/
-│       ├── weak_signal/
-│       ├── risk/
-│       └── recommendation/
-│
-├── docs/
-│   ├── architecture.png
-│   ├── architecture.md
-│   ├── api_documentation.md
-│   └── workflow_examples.md
-│
-└── presentation/
-    ├── diagrams/
-    ├── screenshots/
-    └── demo.mp4
+- Configurable workflow execution
+- Plugin-based agent architecture
+- Dynamic workflow loading from JSON
+- Shared execution context
+- Explainable recommendations
+- Reusable orchestration engine
+- Domain-independent design
+- Extensible AI pipeline
 
 ---
 
-# Workflow Execution
+# Current Demo Workflow
 
-A workflow is defined as JSON.
-
-Example:
-'''
-Workflow Definition
+```
+Workflow
         ↓
-Workflow Orchestrator (Planner)
+Supplier Contract Agent
         ↓
-Data Collection Agents
-    ├── CRM Agent
-    ├── Meeting Agent
-    ├── News Agent
-    └── Knowledge Agent
+Inventory Agent
         ↓
-Shared Execution Context
+Vendor Agent
         ↓
-Decision Intelligence Agents
-    ├── Weak Signal Intelligence
-    ├── Risk Assessment
-    ├── Recommendation Engine
-    └── Explainability Engine
+Policy Agent
+        ↓
+News Agent
+        ↓
+Incident History Agent
+        ↓
+Weak Signal Intelligence
+        ↓
+Risk Assessment
+        ↓
+Recommendation Engine
+        ↓
+Explainability Engine
         ↓
 Decision Response
-'''
-The Planner dynamically loads this workflow and executes every enabled agent in sequence.
+```
 
 ---
 
@@ -240,16 +207,14 @@ The Planner dynamically loads this workflow and executes every enabled agent in 
 
 ## Planner
 
-Responsible for orchestrating workflow execution.
+Coordinates workflow execution.
 
 Responsibilities:
 
 - Load workflow
 - Execute agents
 - Maintain execution order
-- Update ExecutionContext
-
-The planner contains **no business logic**.
+- Store outputs in shared context
 
 ---
 
@@ -257,117 +222,63 @@ The planner contains **no business logic**.
 
 Loads workflow definitions from JSON.
 
-Allows workflows to be modified without changing source code.
+No source code modifications are required when introducing a new workflow.
 
 ---
 
 ## Agent Registry
 
-Maintains all available agents.
+Maps workflow agent names to implementations.
 
-Maps
-
-```
-crm
-```
-
-to
-
-```
-CRMAgent
-```
-
-allowing dynamic execution.
+Allows new agents to be plugged into the platform without modifying the planner.
 
 ---
 
 ## Execution Context
 
-Acts as shared memory across all agents.
+Acts as shared memory for every workflow.
 
-Stores
+Each agent can:
 
-- customer information
-- agent outputs
-- intermediate results
-- metadata
-
-Every agent reads from and writes to the Execution Context.
+- Read outputs produced by previous agents
+- Add its own results
+- Pass enriched information to subsequent agents
 
 ---
 
 ## AgentResult
 
-Every agent returns a standardized response.
+Every agent returns a standardized response:
 
 ```python
 AgentResult
 {
-    agent_name
-    status
-    data
-    execution_time_ms
+    agent_name,
+    status,
+    data,
+    execution_time_ms,
     message
 }
 ```
 
----
-
-# Current Agents
-
-## Data Collection
-
-- CRM Agent
-- Meeting Agent
-- News Agent
-- Knowledge Agent
-
-These agents collect customer-specific information.
+This allows the planner to execute all agents uniformly.
 
 ---
 
-## Reasoning Agents
+# Why the Platform is Reusable
 
-- Weak Signal Intelligence
-- Risk Assessment
-- Recommendation Engine
-- Explainability Engine
+The orchestration layer is completely independent of business logic.
 
-These agents consume outputs from previous agents and generate actionable insights.
+To support a new domain, developers only need to:
 
----
+1. Create new data source agents
+2. Create new reasoning agents (optional)
+3. Define a workflow JSON
+4. Register the new agents
 
-# API
+The Planner, Workflow Loader, Registry, Execution Context, and API remain unchanged.
 
-## Run Workflow
-
-```
-POST /workflow/run
-```
-
-Example request
-
-```json
-{
-    "workflow": "customer_success",
-    "customer_id": "cust_001"
-}
-```
-
-Example response
-
-```json
-{
-    "workflow_name": "customer_success",
-    "status": "SUCCESS",
-    "context_data": {
-        ...
-    },
-    "agent_results": [
-        ...
-    ]
-}
-```
+This enables the same platform to support multiple enterprise workflows without architectural changes.
 
 ---
 
@@ -386,123 +297,34 @@ Example response
 
 ## AI / ML
 
-- HuggingFace Transformers
+- Hugging Face Transformers (planned)
 - DistilBERT (planned)
 - Scikit-learn
 
 ## Data
 
-- JSON (current)
+- JSON (Demo)
+- PostgreSQL (Future)
+
 ---
 
 # Future Enhancements
 
-- Fine-tune the Weak Signal Intelligence model using DistilBERT
-- Replace rule-based Risk Assessment with an ML-based risk prediction model
-- Replace rule-based Recommendation Engine with a learning-to-rank recommendation model
+- Replace rule-based reasoning with fine-tuned ML models
 - PostgreSQL integration
-- CRM API integration (Salesforce, HubSpot, etc.)
-- Real-time News API integration
-- Authentication & Role-Based Access Control
-- Workflow Designer UI
-- Real-time event processing
-- Model monitoring and performance analytics
-
----
-
-# Team Responsibilities
-
-### Platform & Workflow Engine
-
-- FastAPI backend
-- Planner
-- Workflow Loader
-- Agent Registry
-- Execution Context
-- Data Source Agents
-
-### AI Reasoning
-
-- Weak Signal Intelligence
-- Risk Assessment
-- Recommendation Engine
-- Explainability
-
-### Frontend
-
-- React Dashboard
-- What-If Simulator
-- Shadow Mode
-- Decision Visualization
-
----
-
-# Design Principles
-
-- Modular Plugin Architecture
-- Dynamic Workflow Execution
-- Explainable AI
-- Separation of Concerns
-- Extensible ML Pipeline
-- Configurable Workflows
-- Reusable Agent Interfaces
-
----
-
-# Setup and Running the Project
-
-Clone the repository
-
-```bash
-git clone <repository-url>
-```
-
-Navigate to the backend
-
-```bash
-cd backend
-```
-
-Create a virtual environment
-
-```bash
-python -m venv venv
-```
-
-Activate it
-
-**Windows**
-
-```bash
-venv\Scripts\activate
-```
-
-**macOS/Linux**
-
-```bash
-source venv/bin/activate
-```
-
-Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-Run the backend
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Open Swagger
-
-```
-http://127.0.0.1:8000/docs
-```
+- Enterprise API integrations (ERP, Procurement, CRM)
+- Authentication & RBAC
+- Visual workflow designer
+- Real-time event streaming
+- Workflow versioning
+- Agent monitoring & observability
 
 ---
 
 # Vision
 
-NBDE aims to evolve into a configurable enterprise decision intelligence platform where organizations can create workflows composed of specialized AI agents that analyze business data, generate explainable recommendations, and support high-quality decision making across multiple domains.
+NBDE is not tied to a single business domain.
+
+It is designed as a **reusable Agentic Decision Intelligence Platform** capable of orchestrating specialized AI agents across multiple enterprise workflows.
+
+The Enterprise Crisis Intelligence scenario included in this repository serves as a demonstration of how the platform can be adapted to solve real-world decision-making problems in any enterprise environment.
