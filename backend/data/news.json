@@ -1,14 +1,9 @@
 [
   {
-    "customer_id": "cust_001",
-    "headline": "Acme Corp announces leadership change",
-    "sentiment": "neutral",
-    "date": "2026-06-10"
-  },
-  {
-    "customer_id": "cust_001",
-    "headline": "Acme Corp faces budget cuts in Q3",
-    "sentiment": "negative",
-    "date": "2026-06-18"
+    "case_id": "incident_001",
+    "headline": "Major earthquake disrupts semiconductor manufacturing in Taiwan.",
+    "impact": "Critical",
+    "source": "Reuters",
+    "summary": "Several supplier factories have halted production due to infrastructure damage."
   }
 ]

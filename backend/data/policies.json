@@ -1,0 +1,11 @@
+[
+  {
+    "rule": "If inventory falls below 7 days, activate the approved backup supplier."
+  },
+  {
+    "rule": "If a critical supplier outage exceeds 48 hours, escalate to Procurement and Operations leadership."
+  },
+  {
+    "rule": "Notify Legal immediately if contractual obligations may be violated."
+  }
+]

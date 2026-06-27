@@ -1,10 +1,8 @@
 [
   {
-    "topic": "customer_success",
-    "playbooks": {
-      "high_risk": "Schedule executive business review within 7 days",
-      "medium_risk": "Proactive check-in with champion and share ROI report",
-      "low_risk": "Share product update newsletter and invite to webinar"
-    }
+    "rule": "If renewal is less than 30 days and health score is below 70, recommend an Executive Business Review."
+  },
+  {
+    "rule": "If budget concerns are detected, suggest flexible pricing options."
   }
 ]

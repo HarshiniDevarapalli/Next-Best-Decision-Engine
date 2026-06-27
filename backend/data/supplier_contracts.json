@@ -1,0 +1,13 @@
+[
+  {
+    "case_id": "incident_001",
+    "supplier": "ABC Components Ltd.",
+    "contract_type": "Exclusive Supply Agreement",
+    "contract_expiry": "2027-12-31",
+    "penalty_clause": true,
+    "critical_components": [
+      "Semiconductor Chip X"
+    ],
+    "service_level": "High Priority"
+  }
+]
