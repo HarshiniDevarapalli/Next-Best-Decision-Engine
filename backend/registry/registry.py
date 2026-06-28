@@ -1,51 +1,86 @@
-from typing import Dict, List
+# backend/registry/registry.py
+# (Final integration update for Planner-driven architecture)
 
-from agents.base_agent import BaseAgent
+import os
+
+from backend.agents.datasource.supplier_contract_agent import SupplierContractAgent
+from backend.agents.datasource.vendor_agent import VendorAgent
+from backend.agents.datasource.inventory_agent import InventoryAgent
+from backend.agents.datasource.policy_agent import PolicyAgent
+from backend.agents.datasource.news_agent import NewsAgent
+from backend.agents.datasource.incident_history_agent import IncidentHistoryAgent
+
+from backend.agents.reasoning.weak_signal_agent import WeakSignalAgent
+from backend.agents.reasoning.risk_agent import RiskAgent
+from backend.agents.reasoning.recommendation_agent import RecommendationAgent
+from backend.agents.reasoning.explainability_agent import ExplainabilityAgent
+
+from backend.servicesweak_signal.rule_detector import RuleBasedDetector
 
 
 class AgentRegistry:
-    """
-    Registry for all available agents.
-
-    The Planner interacts only with this registry to
-    discover and retrieve agents.
-    """
 
     def __init__(self):
-        self._agents: Dict[str, BaseAgent] = {}
 
-    def register(self, agent: BaseAgent) -> None:
-        """
-        Register an agent.
+        api_key = os.getenv("GEMINI_API_KEY")
 
-        Raises:
-            ValueError: If an agent with the same name already exists.
-        """
-        if agent.name in self._agents:
-            raise ValueError(f"Agent '{agent.name}' is already registered.")
+        self.datasource_agents = {
+            "SupplierContractAgent": SupplierContractAgent(),
+            "VendorAgent": VendorAgent(),
+            "InventoryAgent": InventoryAgent(),
+            "PolicyAgent": PolicyAgent(),
+            "NewsAgent": NewsAgent(),
+            "IncidentHistoryAgent": IncidentHistoryAgent(),
+        }
 
-        self._agents[agent.name] = agent
+        self.reasoning_agents = {
+            "WeakSignalAgent": WeakSignalAgent(
+                rule_detector=RuleBasedDetector(),
+                api_key=api_key,
+            ),
+            "RiskAgent": RiskAgent(api_key),
+            "RecommendationAgent": RecommendationAgent(api_key),
+            "ExplainabilityAgent": ExplainabilityAgent(api_key),
+        }
 
-    def get(self, agent_name: str) -> BaseAgent:
-        """
-        Retrieve an agent by name.
+    def get_datasource_agent(self, agent_name: str):
+        return self.datasource_agents.get(agent_name)
 
-        Raises:
-            KeyError: If the agent is not registered.
-        """
-        if agent_name not in self._agents:
-            raise KeyError(f"Agent '{agent_name}' is not registered.")
+    def get_reasoning_agent(self, agent_name: str):
+        return self.reasoning_agents.get(agent_name)
 
-        return self._agents[agent_name]
+    def get_all_datasource_agents(self):
+        return self.datasource_agents
 
-    def list_agents(self) -> List[str]:
-        """
-        Return a list of all registered agent names.
-        """
-        return list(self._agents.keys())
+    def get_all_reasoning_agents(self):
+        return self.reasoning_agents
 
-    def is_registered(self, agent_name: str) -> bool:
-        """
-        Check whether an agent is registered.
-        """
-        return agent_name in self._agents
+
+# Global registry used by LangGraph
+registry = AgentRegistry()
+
+# backend/registry/registry.py
+# (Add Phase 4 reasoning agents)
+
+from backend.agents.reasoning.what_if_agent import WhatIfAgent
+from backend.agents.reasoning.decision_scoring_agent import DecisionScoringAgent
+from backend.agents.reasoning.cost_impact_agent import CostImpactAgent
+from backend.agents.reasoning.timeline_prediction_agent import TimelinePredictionAgent
+from backend.agents.reasoning.scenario_comparison_agent import ScenarioComparisonAgent
+
+
+# Add inside self.reasoning_agents
+
+self.reasoning_agents.update({
+
+    "WhatIfAgent": WhatIfAgent(api_key),
+
+    "DecisionScoringAgent": DecisionScoringAgent(api_key),
+
+    "CostImpactAgent": CostImpactAgent(api_key),
+
+    "TimelinePredictionAgent": TimelinePredictionAgent(api_key),
+
+    "ScenarioComparisonAgent": ScenarioComparisonAgent(api_key),
+
+})

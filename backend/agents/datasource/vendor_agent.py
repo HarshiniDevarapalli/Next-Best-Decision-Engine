@@ -1,38 +1,71 @@
-import json
-from pathlib import Path
+# backend/agents/datasource/vendor_agent.py
 
-from agents.base_agent import BaseAgent
-from models.execution_context import ExecutionContext
-from models.agent_result import AgentResult
+from typing import Any, Dict, List
+
+from backend.agents.datasource.base_datasource_agent import BaseDatasourceAgent
 
 
-class VendorAgent(BaseAgent):
+class VendorAgent(BaseDatasourceAgent):
+    """
+    Enterprise Vendor Intelligence Agent
+    """
 
-    @property
-    def name(self):
-        return "vendor"
+    DATASOURCE = "vendors"
 
-    @property
-    def description(self):
-        return "Retrieve approved alternative vendors."
+    def __init__(self):
+        super().__init__("VendorAgent")
 
-    def execute(self, context: ExecutionContext) -> AgentResult:
+    def analyze(
+        self,
+        records: List[Dict[str, Any]],
+        parsed_incident: Dict[str, Any],
+    ) -> Dict[str, Any]:
 
-        data_path = Path("data/vendors.json")
+        affected_vendors = []
+        alternate_vendors = []
+        dependencies = []
+        identified_risks = []
+        insights = []
 
-        with open(data_path, "r") as file:
-            vendors = json.load(file)
+        vendor_names = {
+            str(v.get("name", "")).lower()
+            for v in parsed_incident.get("vendor_entities", [])
+            if isinstance(v, dict)
+        }
 
-        vendor_records = [
-            vendor
-            for vendor in vendors
-            if vendor["case_id"] == context.case_id
-        ]
+        for record in records:
 
-        return AgentResult(
-            agent_name=self.name,
-            status="SUCCESS",
-            data={
-                "vendors": vendor_records
-            }
-        )
+            if record.get("status") != "ACTIVE":
+                identified_risks.append(
+                    f"Vendor {record.get('name')} is not active."
+                )
+
+            if record.get("alternate_vendor"):
+                alternate_vendors.append(
+                    record["alternate_vendor"]
+                )
+
+            if record.get("dependencies"):
+                dependencies.extend(
+                    record["dependencies"]
+                )
+
+            affected_vendors.append(record)
+
+        if alternate_vendors:
+            insights.append(
+                "Alternate vendors are available."
+            )
+
+        if not alternate_vendors:
+            insights.append(
+                "No alternate vendors identified."
+            )
+
+        return {
+            "affected_vendors": affected_vendors,
+            "alternate_vendors": alternate_vendors,
+            "dependencies": list(set(dependencies)),
+            "identified_risks": identified_risks,
+            "insights": insights,
+        }

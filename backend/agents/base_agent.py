@@ -3,8 +3,8 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from models.execution_context import ExecutionContext
-from models.agent_result import AgentResult
+from backend.models.execution_context import ExecutionContext
+from backend.models.agent_result import AgentResult
 
 
 class BaseAgent(ABC):

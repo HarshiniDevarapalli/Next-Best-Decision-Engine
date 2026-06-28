@@ -1,38 +1,64 @@
-import json
-from pathlib import Path
+# backend/agents/datasource/incident_history_agent.py
 
-from agents.base_agent import BaseAgent
-from models.execution_context import ExecutionContext
-from models.agent_result import AgentResult
+from typing import Any, Dict, List
+
+from backend.agents.datasource.base_datasource_agent import BaseDatasourceAgent
 
 
-class IncidentHistoryAgent(BaseAgent):
+class IncidentHistoryAgent(BaseDatasourceAgent):
+    """
+    Enterprise Incident History Intelligence Agent
+    """
 
-    @property
-    def name(self):
-        return "incident_history"
+    DATASOURCE = "incident_history"
 
-    @property
-    def description(self):
-        return "Retrieve historical incidents."
+    def __init__(self):
+        super().__init__("IncidentHistoryAgent")
 
-    def execute(self, context: ExecutionContext) -> AgentResult:
+    def analyze(
+        self,
+        records: List[Dict[str, Any]],
+        parsed_incident: Dict[str, Any],
+    ) -> Dict[str, Any]:
 
-        data_path = Path("data/incident_history.json")
+        similar_incidents = []
+        lessons_learned = []
+        successful_actions = []
+        recurring_patterns = []
+        recovery_metrics = []
+        insights = []
 
-        with open(data_path, "r") as file:
-            incidents = json.load(file)
+        for record in records:
 
-        incident_records = [
-            incident
-            for incident in incidents
-            if incident["case_id"] == context.case_id
-        ]
+            similar_incidents.append(record)
 
-        return AgentResult(
-            agent_name=self.name,
-            status="SUCCESS",
-            data={
-                "incident_history": incident_records
-            }
-        )
+            lessons_learned.extend(
+                record.get("lessons_learned", [])
+            )
+
+            successful_actions.extend(
+                record.get("successful_actions", [])
+            )
+
+            recurring_patterns.extend(
+                record.get("patterns", [])
+            )
+
+            if record.get("recovery_time"):
+                recovery_metrics.append(
+                    record["recovery_time"]
+                )
+
+        if similar_incidents:
+            insights.append(
+                f"{len(similar_incidents)} similar historical incidents identified."
+            )
+
+        return {
+            "similar_incidents": similar_incidents,
+            "lessons_learned": lessons_learned,
+            "successful_actions": successful_actions,
+            "recurring_patterns": recurring_patterns,
+            "recovery_metrics": recovery_metrics,
+            "insights": insights,
+        }

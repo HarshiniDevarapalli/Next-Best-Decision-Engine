@@ -1,7 +1,7 @@
-from agents.reasoning.weak_signal_agent import WeakSignalAgent
-from agents.reasoning.risk_agent import RiskAssessmentAgent
+from backend.agents.reasoning.weak_signal_agent import WeakSignalAgent
+from backend.agents.reasoning.risk_agent import RiskAssessmentAgent
 
-from models.execution_context import ExecutionContext
+from backend.models.execution_context import ExecutionContext
 
 context = ExecutionContext(
     workflow_name="enterprise_crisis",

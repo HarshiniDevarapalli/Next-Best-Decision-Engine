@@ -1,32 +1,62 @@
-import json
-from pathlib import Path
+# backend/agents/datasource/policy_agent.py
 
-from agents.base_agent import BaseAgent
-from models.execution_context import ExecutionContext
-from models.agent_result import AgentResult
+from typing import Any, Dict, List
+
+from backend.agents.datasource.base_datasource_agent import BaseDatasourceAgent
 
 
-class PolicyAgent(BaseAgent):
+class PolicyAgent(BaseDatasourceAgent):
+    """
+    Enterprise Policy Intelligence Agent
+    """
 
-    @property
-    def name(self):
-        return "policy"
+    DATASOURCE = "policies"
 
-    @property
-    def description(self):
-        return "Retrieve enterprise crisis response policies."
+    def __init__(self):
+        super().__init__("PolicyAgent")
 
-    def execute(self, context: ExecutionContext) -> AgentResult:
+    def analyze(
+        self,
+        records: List[Dict[str, Any]],
+        parsed_incident: Dict[str, Any],
+    ) -> Dict[str, Any]:
 
-        data_path = Path("data/policies.json")
+        applicable_policies = []
+        compliance_requirements = []
+        business_continuity = []
+        escalation_rules = []
+        identified_risks = []
+        insights = []
 
-        with open(data_path, "r") as file:
-            policies = json.load(file)
+        for record in records:
 
-        return AgentResult(
-            agent_name=self.name,
-            status="SUCCESS",
-            data={
-                "policies": policies
-            }
-        )
+            applicable_policies.append(record)
+
+            compliance_requirements.extend(
+                record.get("compliance", [])
+            )
+
+            business_continuity.extend(
+                record.get("business_continuity", [])
+            )
+
+            escalation_rules.extend(
+                record.get("escalation", [])
+            )
+
+            if record.get("risk"):
+                identified_risks.append(record["risk"])
+
+        if applicable_policies:
+            insights.append(
+                f"{len(applicable_policies)} relevant policies found."
+            )
+
+        return {
+            "applicable_policies": applicable_policies,
+            "compliance_requirements": compliance_requirements,
+            "business_continuity": business_continuity,
+            "escalation_rules": escalation_rules,
+            "identified_risks": identified_risks,
+            "insights": insights,
+        }

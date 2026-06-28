@@ -1,12 +1,17 @@
-from services.weak_signal.llm_detector import LLMWeakSignalDetector
+from backend.servicesweak_signal.llm_detector import LLMWeakSignalDetector
 
 detector = LLMWeakSignalDetector()
 
 transcript = """
-Customer said they are evaluating Salesforce.
-They also mentioned budget cuts next quarter.
-Usage has been declining.
-Renewal is in three weeks.
+Customer said they are considering Salesforce.
+
+Budget has been reduced by 25%.
+
+Renewal is in 18 days.
+
+Product adoption has been declining.
+
+Customer requested executive involvement.
 """
 
 report = detector.predict(transcript)

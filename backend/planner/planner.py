@@ -1,65 +1,68 @@
-# planner/planner.py
+# backend/planner/planner.py
+# (Final integrated Planner)
 
-from models.execution_context import ExecutionContext
-from planner.workflow_loader import WorkflowLoader
-from registry.registry import AgentRegistry
+import os
+from typing import Any, Dict
+from backend.graph.workflow_graph import enterprise_workflow
+from backend.graph.state import WorkflowState
+from backend.services.ai.planner_chain import PlannerChain
 
 
 class Planner:
-    """
-    The Planner orchestrates workflow execution.
 
-    Responsibilities:
-    - Load workflow configuration
-    - Retrieve required agents from the registry
-    - Execute enabled agents in sequence
-    - Maintain the shared ExecutionContext
-    - Return the updated ExecutionContext
+    def __init__(self):
 
-    The Planner contains NO business logic.
-    """
+        self.planner = PlannerChain(
+            api_key=os.getenv("GEMINI_API_KEY")
+        )
 
-    def __init__(
+        self.workflow = enterprise_workflow
+
+    def execute(
         self,
-        workflow_loader: WorkflowLoader,
-        agent_registry: AgentRegistry
+        workflow: str,
+        mode: str,
+        incident: str | None = None,
+        case_id: str | None = None,
+        overrides: Dict[str, Any] | None = None,
     ):
-        self.workflow_loader = workflow_loader
-        self.agent_registry = agent_registry
 
-    def execute_workflow(
-        self,
-        workflow_name: str,
-        case_id: str
-    ) -> ExecutionContext:
+        execution_plan = self.planner.plan(
+            workflow=workflow,
+            mode=mode,
+            incident=incident or "",
+        ).model_dump()
 
-        # Load workflow configuration
-        workflow = self.workflow_loader.load_workflow(workflow_name)
+        state: WorkflowState = {
+            "workflow": workflow,
+            "mode": mode,
+            "incident": incident,
+            "case_id": case_id,
+            "overrides": overrides or {},
 
-        # Create execution context
-        context = ExecutionContext(
-        workflow_name=workflow.workflow_name,
-        case_id=case_id
-    )   
+            "execution_plan": execution_plan,
 
-        # Execute agents in workflow order
-        # Execute agents in workflow order
-        for agent_config in workflow.agents:
+            "parsed_incident": {},
+            "datasource_context": {},
 
-            # Skip disabled agents
-            if not agent_config.enabled:
-                continue
+            "rule_based_report": None,
+            "llm_report": None,
+            "shadow_comparison": None,
 
-            # Get the agent (will raise KeyError if not registered)
-            agent = self.agent_registry.get(agent_config.name)
+            "risk_report": None,
+            "recommendation_report": None,
+            "simulation_report": None,
+            "decision_scores": None,
+            "cost_report": None,
+            "timeline_report": None,
+            "scenario_comparison": None,
+            "explainability_report": None,
 
-            # Execute the agent
-            result = agent.execute(context)
+            "executed_agents": [],
+            "skipped_agents": [],
+            "response": None,
+        }
 
-            # Store results
-            context.agent_results.append(result)
-            context.context_data[agent_config.name] = result.data
+        result = self.workflow.invoke(state)
 
-        context.status = "SUCCESS"
-
-        return context
+        return result["response"]
