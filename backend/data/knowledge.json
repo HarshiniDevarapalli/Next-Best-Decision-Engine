@@ -1,8 +1,0 @@
-[
-  {
-    "rule": "If renewal is less than 30 days and health score is below 70, recommend an Executive Business Review."
-  },
-  {
-    "rule": "If budget concerns are detected, suggest flexible pricing options."
-  }
-]

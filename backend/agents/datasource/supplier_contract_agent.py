@@ -10,7 +10,7 @@ class SupplierContractAgent(BaseAgent):
 
     @property
     def name(self):
-        return "supplier_contracts"
+        return "supplier_contract"
 
     @property
     def description(self):
@@ -25,7 +25,8 @@ class SupplierContractAgent(BaseAgent):
 
         supplier = next(
             (
-                s for s in suppliers
+                s
+                for s in suppliers
                 if s["case_id"] == context.case_id
             ),
             {}

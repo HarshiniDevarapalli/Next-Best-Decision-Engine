@@ -10,7 +10,7 @@ class PolicyAgent(BaseAgent):
 
     @property
     def name(self):
-        return "policies"
+        return "policy"
 
     @property
     def description(self):

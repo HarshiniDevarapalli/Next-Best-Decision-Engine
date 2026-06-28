@@ -10,7 +10,7 @@
 
   "agents": [
     {
-      "name": "supplier_contracts",
+      "name": "supplier_contract",
       "enabled": true
     },
     {
@@ -18,11 +18,11 @@
       "enabled": true
     },
     {
-      "name": "vendors",
+      "name": "vendor",
       "enabled": true
     },
     {
-      "name": "policies",
+      "name": "policy",
       "enabled": true
     },
     {

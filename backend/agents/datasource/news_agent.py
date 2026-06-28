@@ -14,7 +14,7 @@ class NewsAgent(BaseAgent):
 
     @property
     def description(self):
-        return "Retrieve enterprise news related to the crisis."
+        return "Retrieve news related to the crisis."
 
     def execute(self, context: ExecutionContext) -> AgentResult:
 
@@ -23,16 +23,17 @@ class NewsAgent(BaseAgent):
         with open(data_path, "r") as file:
             news = json.load(file)
 
-        news_items = [
-            article
-            for article in news
-            if article["case_id"] == context.case_id
-        ]
+        article = next(
+            (
+                item
+                for item in news
+                if item["case_id"] == context.case_id
+            ),
+            {}
+        )
 
         return AgentResult(
             agent_name=self.name,
             status="SUCCESS",
-            data={
-                "news": news_items
-            }
+            data=article
         )

@@ -10,11 +10,11 @@ class VendorAgent(BaseAgent):
 
     @property
     def name(self):
-        return "vendors"
+        return "vendor"
 
     @property
     def description(self):
-        return "Retrieve alternative vendor information."
+        return "Retrieve approved alternative vendors."
 
     def execute(self, context: ExecutionContext) -> AgentResult:
 
