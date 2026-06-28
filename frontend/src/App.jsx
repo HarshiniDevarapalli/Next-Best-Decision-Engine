@@ -7,13 +7,14 @@ import LoadingPanel, { STEPS } from "./components/LoadingPanel";
 import ProgressBar from "./components/ProgressBar";
 import StatusBanner from "./components/StatusBanner";
 import ResultsDashboard from "./components/ResultsDashboard";
+import WhatIfSimulator from "./components/WhatIfSimulator";
 import { useAuth } from "./context/AuthContext";
 import { runWorkflow } from "./api/workflowApi";
 
 function App() {
   const { currentUser, rememberMe } = useAuth();
   const [view, setView] = useState("homepage"); // homepage | login | app
-  const [status, setStatus] = useState("idle");
+  const [status, setStatus] = useState("idle"); // idle | loading | success | showingResult | error | whatIf
   const [result, setResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [currentStep, setCurrentStep] = useState(0);
@@ -89,6 +90,14 @@ function App() {
     setErrorMsg("");
   }
 
+  function handleOpenWhatIf() {
+    setStatus("whatIf");
+  }
+
+  function handleBackFromWhatIf() {
+    setStatus("showingResult");
+  }
+
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 overflow-y-auto">
       <Header onLogoClick={goToHomepage} onLogout={handleLogout} />
@@ -105,15 +114,16 @@ function App() {
         <StatusBanner type="success" message="Analysis completed successfully" />
       )}
 
-      {status === "error" && (
-        <>
-          <StatusBanner type="error" message="Analysis failed" />
-          <p className="text-center text-red-500 -mt-12">{errorMsg}</p>
-        </>
+      {status === "showingResult" && (
+        <ResultsDashboard
+          result={result}
+          onReset={handleReset}
+          onOpenWhatIf={handleOpenWhatIf}
+        />
       )}
 
-      {status === "showingResult" && (
-        <ResultsDashboard result={result} onReset={handleReset} />
+      {status === "whatIf" && (
+        <WhatIfSimulator caseId={result.case_id} onBack={handleBackFromWhatIf} />
       )}
     </div>
   );

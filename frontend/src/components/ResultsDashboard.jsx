@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { FlaskConical } from "lucide-react";
 import RiskCard from "./RiskCard";
 import SummaryCard from "./SummaryCard";
 import WeakSignalsCard from "./WeakSignalsCard";
@@ -6,7 +7,7 @@ import RecommendationsCard from "./RecommendationsCard";
 import StakeholdersCard from "./StakeholdersCard";
 import EvidenceCard from "./EvidenceCard";
 
-function ResultsDashboard({ result, onReset }) {
+function ResultsDashboard({ result, onReset, onOpenWhatIf }) {
   if (!result) return null;
 
   const contextData = result.context_data || {};
@@ -21,12 +22,21 @@ function ResultsDashboard({ result, onReset }) {
         <h1 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
           Case: {result.case_id}
         </h1>
-        <button
-          onClick={onReset}
-          className="bg-brand-darkest dark:bg-brand-light text-white dark:text-slate-900 px-5 py-2.5 rounded-full font-semibold text-sm hover:opacity-90 transition"
-        >
-          Run Another Case
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onOpenWhatIf}
+            className="flex items-center gap-2 border border-brand-darkest dark:border-brand-light text-brand-darkest dark:text-brand-light px-4 py-2.5 rounded-full font-semibold text-sm hover:bg-brand-lightest dark:hover:bg-slate-800 transition"
+          >
+            <FlaskConical size={15} />
+            What-If Simulator
+          </button>
+          <button
+            onClick={onReset}
+            className="bg-brand-darkest dark:bg-brand-light text-white dark:text-slate-900 px-5 py-2.5 rounded-full font-semibold text-sm hover:opacity-90 transition"
+          >
+            Run Another Case
+          </button>
+        </div>
       </motion.div>
 
       <RiskCard riskReport={contextData.risk_report} />

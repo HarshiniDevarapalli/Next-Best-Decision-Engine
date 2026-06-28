@@ -1,5 +1,8 @@
 from fastapi import APIRouter
 
+from models.simulate_request import SimulateRequest
+from planner.simulator import run_simulation
+
 from models.request import WorkflowRequest
 from planner.planner import Planner
 from planner.workflow_loader import WorkflowLoader
@@ -60,6 +63,31 @@ def run_workflow(request: WorkflowRequest):
     context = planner.execute_workflow(
         workflow_name=request.workflow,
         case_id=request.case_id
+    )
+
+    return context
+
+@router.post("/workflow/simulate")
+def simulate_workflow(request: SimulateRequest):
+    """
+    What-If Simulator.
+
+    Runs the same crisis_response pipeline twice on the same
+    base case: once with real data (baseline), and once with
+    the caller's field overrides applied (simulated). Returns
+    both results so the frontend can show a side-by-side
+    comparison of how the outcome changes.
+
+    This does not modify /workflow/run, the Planner, or any
+    individual agent - it reuses the same registered agents
+    via a separate orchestration function (run_simulation).
+    """
+
+    context = run_simulation(
+        workflow_name=request.workflow,
+        case_id=request.case_id,
+        overrides=request.overrides,
+        registry=registry,
     )
 
     return context
