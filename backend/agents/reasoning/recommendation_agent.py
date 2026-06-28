@@ -21,7 +21,7 @@ class RecommendationAgent(BaseAgent):
 
     @property
     def name(self):
-        return "RecommendationAgent"
+        return "recommendation"
 
     @property
     def description(self):
@@ -239,7 +239,5 @@ class RecommendationAgent(BaseAgent):
             }
 
         )
-
-        context.agent_results.append(result)
 
         return result

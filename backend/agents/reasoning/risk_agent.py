@@ -49,7 +49,7 @@ class RiskAssessmentAgent(BaseAgent):
 
     @property
     def name(self):
-        return "RiskAssessmentAgent"
+        return "risk"
 
     @property
     def description(self):
@@ -225,7 +225,5 @@ class RiskAssessmentAgent(BaseAgent):
             }
 
         )
-
-        context.agent_results.append(result)
 
         return result

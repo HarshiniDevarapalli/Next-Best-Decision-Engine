@@ -18,7 +18,7 @@ class ExplainabilityAgent(BaseAgent):
 
     @property
     def name(self):
-        return "ExplainabilityAgent"
+        return "explainability"
 
     @property
     def description(self):
@@ -114,6 +114,5 @@ class ExplainabilityAgent(BaseAgent):
 
         )
 
-        context.agent_results.append(result)
 
         return result

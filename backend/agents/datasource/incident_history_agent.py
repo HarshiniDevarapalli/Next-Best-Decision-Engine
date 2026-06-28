@@ -14,7 +14,7 @@ class IncidentHistoryAgent(BaseAgent):
 
     @property
     def description(self):
-        return "Retrieve historical incidents similar to the current crisis."
+        return "Retrieve historical incidents."
 
     def execute(self, context: ExecutionContext) -> AgentResult:
 

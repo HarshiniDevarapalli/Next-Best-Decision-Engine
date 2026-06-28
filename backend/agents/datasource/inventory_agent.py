@@ -23,16 +23,17 @@ class InventoryAgent(BaseAgent):
         with open(data_path, "r") as file:
             inventory = json.load(file)
 
-        inventory_records = [
-            item
-            for item in inventory
-            if item["case_id"] == context.case_id
-        ]
+        inventory_record = next(
+            (
+                item
+                for item in inventory
+                if item["case_id"] == context.case_id
+            ),
+            {}
+        )
 
         return AgentResult(
             agent_name=self.name,
             status="SUCCESS",
-            data={
-                "inventory": inventory_records
-            }
+            data=inventory_record
         )
