@@ -14,5 +14,29 @@
     "stock_days_remaining": 28,
     "daily_consumption": 350,
     "production_impact": "Medium"
+  },
+  {
+    "case_id": "incident_003",
+    "component": "AI Accelerator Chip Z",
+    "warehouse": "Japan",
+    "stock_days_remaining": 3,
+    "daily_consumption": 1500,
+    "production_impact": "Critical"
+  },
+  {
+    "case_id": "incident_004",
+    "component": "Security Gateway Appliance",
+    "warehouse": "United States",
+    "stock_days_remaining": 10,
+    "daily_consumption": 180,
+    "production_impact": "High"
+  },
+  {
+    "case_id": "incident_005",
+    "component": "Industrial Solvent A",
+    "warehouse": "Netherlands",
+    "stock_days_remaining": 14,
+    "daily_consumption": 500,
+    "production_impact": "Medium"
   }
 ]

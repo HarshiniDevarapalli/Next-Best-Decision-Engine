@@ -9,5 +9,49 @@
       "Semiconductor Chip X"
     ],
     "service_level": "High Priority"
+  },
+  {
+    "case_id": "incident_002",
+    "supplier": "Nova Power Systems",
+    "contract_type": "Strategic Supply Agreement",
+    "contract_expiry": "2028-08-15",
+    "penalty_clause": false,
+    "critical_components": [
+      "Power Module Y"
+    ],
+    "service_level": "Standard"
+  },
+  {
+    "case_id": "incident_003",
+    "supplier": "Global Micro Devices",
+    "contract_type": "Long-Term Procurement Contract",
+    "contract_expiry": "2026-11-30",
+    "penalty_clause": true,
+    "critical_components": [
+      "AI Accelerator Chip Z"
+    ],
+    "service_level": "High Priority"
+  },
+  {
+    "case_id": "incident_004",
+    "supplier": "SecureNet Technologies",
+    "contract_type": "Cybersecurity Infrastructure Agreement",
+    "contract_expiry": "2029-04-20",
+    "penalty_clause": true,
+    "critical_components": [
+      "Security Gateway Appliance"
+    ],
+    "service_level": "Critical"
+  },
+  {
+    "case_id": "incident_005",
+    "supplier": "EcoChem Industries",
+    "contract_type": "Raw Material Supply Agreement",
+    "contract_expiry": "2027-09-10",
+    "penalty_clause": false,
+    "critical_components": [
+      "Industrial Solvent A"
+    ],
+    "service_level": "Standard"
   }
 ]
