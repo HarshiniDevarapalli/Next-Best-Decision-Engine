@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Sora", system-ui, sans-serif;
+
+  --color-brand-darkest: #659287;
+  --color-brand-dark: #88bda4;
+  --color-brand-light: #b1d3b9;
+  --color-brand-lightest: #e6f2dd;
+}
+
+body {
+  font-family: "Sora", system-ui, sans-serif;
+}
