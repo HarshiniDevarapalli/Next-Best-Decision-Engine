@@ -7,5 +7,41 @@
   },
   {
     "rule": "Notify Legal immediately if contractual obligations may be violated."
+  },
+  {
+    "rule": "If no approved backup supplier is available, initiate emergency vendor onboarding."
+  },
+  {
+    "rule": "Escalate all critical operational incidents to the Enterprise Crisis Management Team within one hour."
+  },
+  {
+    "rule": "If production downtime is expected to exceed 24 hours, notify executive leadership."
+  },
+  {
+    "rule": "Review all supplier contracts before switching to an alternate vendor."
+  },
+  {
+    "rule": "Prioritize inventory allocation for high-value customer orders during supply shortages."
+  },
+  {
+    "rule": "Initiate business continuity procedures when critical operations are disrupted."
+  },
+  {
+    "rule": "Notify Compliance immediately if regulatory obligations are impacted."
+  },
+  {
+    "rule": "Perform a cybersecurity assessment before integrating any emergency vendor systems."
+  },
+  {
+    "rule": "Review insurance coverage for all incidents involving natural disasters."
+  },
+  {
+    "rule": "Increase executive status reporting frequency during critical incidents."
+  },
+  {
+    "rule": "Document all crisis response decisions for post-incident audit purposes."
+  },
+  {
+    "rule": "Conduct a post-incident review and update business continuity plans after recovery."
   }
 ]

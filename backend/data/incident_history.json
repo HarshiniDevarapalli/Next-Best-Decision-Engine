@@ -12,5 +12,65 @@
     "incident_type": "Shipping Delay",
     "resolution": "Expedited shipments through alternate logistics partner.",
     "downtime_days": 1
+  },
+
+  {
+    "case_id": "incident_002",
+    "incident_date": "2024-03-08",
+    "incident_type": "Port Congestion",
+    "resolution": "Rescheduled shipments through alternate ports.",
+    "downtime_days": 0
+  },
+  {
+    "case_id": "incident_002",
+    "incident_date": "2025-01-22",
+    "incident_type": "Weather Delay",
+    "resolution": "Adjusted delivery schedules with customers.",
+    "downtime_days": 1
+  },
+
+  {
+    "case_id": "incident_003",
+    "incident_date": "2024-07-14",
+    "incident_type": "Semiconductor Shortage",
+    "resolution": "Allocated inventory to priority customers and sourced emergency suppliers.",
+    "downtime_days": 5
+  },
+  {
+    "case_id": "incident_003",
+    "incident_date": "2025-02-19",
+    "incident_type": "Supplier Bankruptcy",
+    "resolution": "Migrated production to approved backup vendors.",
+    "downtime_days": 4
+  },
+
+  {
+    "case_id": "incident_004",
+    "incident_date": "2024-11-30",
+    "incident_type": "Ransomware Attack",
+    "resolution": "Activated disaster recovery plan and restored systems from backups.",
+    "downtime_days": 2
+  },
+  {
+    "case_id": "incident_004",
+    "incident_date": "2025-04-09",
+    "incident_type": "Network Outage",
+    "resolution": "Switched to redundant network infrastructure.",
+    "downtime_days": 1
+  },
+
+  {
+    "case_id": "incident_005",
+    "incident_date": "2024-05-27",
+    "incident_type": "Environmental Compliance Audit",
+    "resolution": "Updated supplier documentation and implemented corrective actions.",
+    "downtime_days": 0
+  },
+  {
+    "case_id": "incident_005",
+    "incident_date": "2025-03-15",
+    "incident_type": "Import Regulation Change",
+    "resolution": "Revised procurement strategy and secured regulatory approvals.",
+    "downtime_days": 2
   }
 ]
