@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import router
+from backend.api.routes import router
 
 app = FastAPI(
     title="Enterprise Decision Intelligence Platform",
-    version="2.0.0"
+    version="2.0.0",
 )
 
 app.add_middleware(
@@ -24,5 +24,5 @@ def health():
     return {
         "status": "running",
         "engine": "Enterprise Decision Intelligence Platform",
-        "version": "2.0.0"
+        "version": "2.0.0",
     }
