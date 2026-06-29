@@ -7,13 +7,14 @@ import LoadingPanel, { STEPS } from "./components/LoadingPanel";
 import ProgressBar from "./components/ProgressBar";
 import StatusBanner from "./components/StatusBanner";
 import ResultsDashboard from "./components/ResultsDashboard";
+import ReviewScreen from "./components/ReviewScreen";
 import { useAuth } from "./context/AuthContext";
-import { runWorkflow } from "./api/workflowApi";
+import { analyzeIncident } from "./api/workflowApi";
 
 function App() {
   const { currentUser, rememberMe } = useAuth();
   const [view, setView] = useState("homepage"); // homepage | login | app
-  const [status, setStatus] = useState("idle");
+  const [status, setStatus] = useState("idle"); // idle | loading | success | showingResult | waitingForReview | error
   const [result, setResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [currentStep, setCurrentStep] = useState(0);
@@ -49,7 +50,7 @@ function App() {
     return <Login onSuccess={handleLoginSuccess} />;
   }
 
-  async function handleRun(caseId) {
+  async function handleRun(incident, mode) {
     setStatus("loading");
     setResult(null);
     setErrorMsg("");
@@ -59,28 +60,30 @@ function App() {
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
     }, 350);
 
-    const minimumLoadingTime = new Promise((resolve) =>
-      setTimeout(resolve, STEPS.length * 350)
-    );
-
     try {
-      const [data] = await Promise.all([
-        runWorkflow(caseId),
-        minimumLoadingTime,
-      ]);
+      const data = await analyzeIncident(incident, mode);
       clearInterval(stepInterval);
       setCurrentStep(STEPS.length);
       setResult(data);
-      setStatus("success");
 
-      setTimeout(() => {
-        setStatus("showingResult");
-      }, 1000);
+      if (data.status === "WAITING_FOR_HUMAN_REVIEW") {
+        setStatus("waitingForReview");
+      } else {
+        setStatus("success");
+        setTimeout(() => {
+          setStatus("showingResult");
+        }, 1000);
+      }
     } catch (err) {
       clearInterval(stepInterval);
       setErrorMsg(err.message);
       setStatus("error");
     }
+  }
+
+  function handleReviewSubmitted(updatedData) {
+    setResult(updatedData);
+    setStatus("showingResult");
   }
 
   function handleReset() {
@@ -110,6 +113,14 @@ function App() {
           <StatusBanner type="error" message="Analysis failed" />
           <p className="text-center text-red-500 -mt-12">{errorMsg}</p>
         </>
+      )}
+
+      {status === "waitingForReview" && (
+        <ReviewScreen
+          result={result}
+          onReviewSubmitted={handleReviewSubmitted}
+          onBack={handleReset}
+        />
       )}
 
       {status === "showingResult" && (

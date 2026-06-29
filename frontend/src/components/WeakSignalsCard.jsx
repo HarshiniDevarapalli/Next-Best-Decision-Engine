@@ -1,15 +1,14 @@
 import { motion } from "framer-motion";
-import { Radar } from "lucide-react";
+import { Radar, GitCompareArrows } from "lucide-react";
 
-function WeakSignalsCard({ weakSignalReport }) {
-  if (!weakSignalReport?.signals) return null;
+function WeakSignalsCard({ weakSignal }) {
+  if (!weakSignal) return null;
 
-  const severityStyles = {
-    critical: "bg-red-500",
-    high: "bg-orange-500",
-    medium: "bg-amber-500",
-    low: "bg-brand-dark",
-  };
+  const hasShadow = weakSignal.shadow_comparison;
+  const ruleBased = weakSignal.rule_based;
+  const llm = weakSignal.llm;
+
+  if (!ruleBased && !llm) return null;
 
   return (
     <motion.div
@@ -21,41 +20,51 @@ function WeakSignalsCard({ weakSignalReport }) {
       <div className="flex items-center gap-2 mb-4">
         <Radar size={18} className="text-brand-darkest dark:text-brand-light" />
         <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-          Weak Signals Detected ({weakSignalReport.signals.length})
+          Weak Signal Detection
         </h2>
       </div>
 
-      <div className="flex flex-col gap-3">
-        {weakSignalReport.signals.map((signal, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.05 }}
-            className="flex gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60"
-          >
-            <div
-              className={`w-1.5 rounded-full shrink-0 ${
-                severityStyles[signal.severity] || "bg-slate-400"
-              }`}
-            />
-            <div className="flex-1">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <p className="font-semibold text-slate-900 dark:text-white capitalize text-sm">
-                  {signal.signal.replace(/_/g, " ")}
-                </p>
-                <span className="text-xs uppercase font-bold text-slate-400 dark:text-slate-500">
-                  {signal.severity} · {Math.round(signal.confidence * 100)}%
-                </span>
-              </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                {signal.explanation}
-              </p>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      {hasShadow ? (
+        <div>
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg bg-brand-lightest dark:bg-slate-800">
+            <GitCompareArrows size={14} className="text-brand-darkest dark:text-brand-light" />
+            <span className="text-xs font-semibold text-brand-darkest dark:text-brand-light">
+              Shadow Mode Active — comparing rule-based vs. LLM detection
+            </span>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <SignalBlock title="Rule-Based" data={ruleBased} />
+            <SignalBlock title="LLM-Based" data={llm} />
+          </div>
+        </div>
+      ) : (
+        <SignalBlock title={llm ? "LLM-Based" : "Rule-Based"} data={llm || ruleBased} />
+      )}
     </motion.div>
+  );
+}
+
+function SignalBlock({ title, data }) {
+  if (!data) return null;
+
+  return (
+    <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl p-4">
+      <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">{title}</p>
+      {Array.isArray(data) ? (
+        <ul className="flex flex-col gap-1.5">
+          {data.map((s, i) => (
+            <li key={i} className="text-sm text-slate-600 dark:text-slate-300 flex gap-2">
+              <span className="opacity-60">•</span>
+              {typeof s === "string" ? s : JSON.stringify(s)}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <pre className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+          {JSON.stringify(data, null, 2)}
+        </pre>
+      )}
+    </div>
   );
 }
 

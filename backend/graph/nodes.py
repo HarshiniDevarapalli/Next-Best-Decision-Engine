@@ -7,7 +7,17 @@ def incident_parser_node(state):
     """
     Planner has already created the execution plan.
     WeakSignalAgent owns the incident parser.
+
+    Skip guard: when resuming a paused workflow after human review,
+    this node (and every node before human_review in the graph) gets
+    invoked again from START, since this graph has no native resume
+    entry point. parsed_incident is already populated from the first
+    pass in that case, so re-parsing would just waste an LLM call
+    for no new information.
     """
+
+    if state.get("parsed_incident"):
+        return state
 
     parser = registry.get_reasoning_agent(
         "WeakSignalAgent"
@@ -28,7 +38,14 @@ def datasource_node(state):
     Execute datasource agents sequentially.
     Parallel execution is disabled to avoid concurrent
     Chroma initialization during debugging.
+
+    Skip guard: same resume scenario as incident_parser_node above -
+    datasource_context is already populated from the first pass, so
+    skip re-fetching unchanged enterprise data on resume.
     """
+
+    if state.get("datasource_context"):
+        return state
 
     plan = state["execution_plan"]
 
@@ -73,6 +90,9 @@ def datasource_node(state):
 
 def weak_signal_node(state):
 
+    if state.get("rule_based_report") is not None or state.get("llm_report") is not None:
+        return state
+
     if (
         "WeakSignalAgent"
         not in state["execution_plan"]["reasoning_agents"]
@@ -99,6 +119,9 @@ def weak_signal_node(state):
 
 def risk_node(state):
 
+    if state.get("risk_report") is not None:
+        return state
+
     if "RiskAgent" not in state["execution_plan"]["reasoning_agents"]:
         return state
 
@@ -116,6 +139,9 @@ def risk_node(state):
 
 
 def recommendation_node(state):
+
+    if state.get("recommendation_report") is not None:
+        return state
 
     if "RecommendationAgent" not in state["execution_plan"]["reasoning_agents"]:
         return state
@@ -136,6 +162,9 @@ def recommendation_node(state):
 
 def simulation_node(state):
 
+    if state.get("simulation_report") is not None:
+        return state
+
     if "WhatIfAgent" not in state["execution_plan"]["reasoning_agents"]:
         return state
 
@@ -152,6 +181,9 @@ def simulation_node(state):
 
 
 def decision_scoring_node(state):
+
+    if state.get("decision_scores") is not None:
+        return state
 
     if "DecisionScoringAgent" not in state["execution_plan"]["reasoning_agents"]:
         return state
@@ -170,6 +202,9 @@ def decision_scoring_node(state):
 
 def cost_impact_node(state):
 
+    if state.get("cost_report") is not None:
+        return state
+
     if "CostImpactAgent" not in state["execution_plan"]["reasoning_agents"]:
         return state
 
@@ -184,6 +219,9 @@ def cost_impact_node(state):
     return state
 
 def timeline_prediction_node(state):
+
+    if state.get("timeline_report") is not None:
+        return state
 
     if "TimelinePredictionAgent" not in state["execution_plan"]["reasoning_agents"]:
         return state
@@ -201,6 +239,9 @@ def timeline_prediction_node(state):
 
 
 def scenario_comparison_node(state):
+
+    if state.get("scenario_comparison") is not None:
+        return state
 
     if "ScenarioComparisonAgent" not in state["execution_plan"]["reasoning_agents"]:
         return state
@@ -222,23 +263,28 @@ def explainability_node(state):
     if "ExplainabilityAgent" not in state["execution_plan"]["reasoning_agents"]:
         return state
 
-    agent = registry.get_reasoning_agent("ExplainabilityAgent")
+    if state.get("explainability_report") is None:
 
-    state["explainability_report"] = agent.execute(
-        parsed_incident=state["parsed_incident"],
-        enterprise_context=state["datasource_context"],
-        rule_report=state.get("rule_based_report"),
-        llm_report=state.get("llm_report"),
-        risk_report=state.get("risk_report"),
-        recommendation_report=state.get("recommendation_report"),
-        simulation_report=state.get("simulation_report"),
-        decision_scores=state.get("decision_scores"),
-        cost_report=state.get("cost_report"),
-        timeline_report=state.get("timeline_report"),
-        scenario_comparison=state.get("scenario_comparison"),
-        planner_context=state["execution_plan"],
-    )
+        agent = registry.get_reasoning_agent("ExplainabilityAgent")
 
+        state["explainability_report"] = agent.execute(
+            parsed_incident=state["parsed_incident"],
+            enterprise_context=state["datasource_context"],
+            rule_report=state.get("rule_based_report"),
+            llm_report=state.get("llm_report"),
+            risk_report=state.get("risk_report"),
+            recommendation_report=state.get("recommendation_report"),
+            simulation_report=state.get("simulation_report"),
+            decision_scores=state.get("decision_scores"),
+            cost_report=state.get("cost_report"),
+            timeline_report=state.get("timeline_report"),
+            scenario_comparison=state.get("scenario_comparison"),
+            planner_context=state["execution_plan"],
+        )
+
+    # Rebuilt every time (cheap, no LLM call) so that on resume after
+    # human review, the response reflects the latest review_status /
+    # approved_recommendation rather than the stale pre-review values.
     state["response"] = {
         "planner": state["execution_plan"],
         "incident": state["parsed_incident"],

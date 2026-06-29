@@ -114,19 +114,26 @@ class Planner:
 
         # ---------------------------------------
 
-        # If workflow paused for Human Review,
-        # return exactly what HumanReviewNode created.
+        # If workflow paused for Human Review, return exactly what
+        # HumanReviewNode created, plus the full raw state attached
+        # under "_raw_state" so the caller (the API layer) can
+        # cache it and pass it back into resume_after_review() once
+        # a reviewer decision is made. Without this, the paused
+        # state would be lost as soon as this function returns.
         if (
             result.get("response")
             and result["response"].get("status") == "WAITING_FOR_HUMAN_REVIEW"
         ):
-            return result["response"]
+            paused_response = dict(result["response"])
+            paused_response["_raw_state"] = result
+            return paused_response
 
         # Normal completion
         if result.get("response") is not None:
             return result["response"]
 
         return result
+
 
     def resume_after_review(
         self,

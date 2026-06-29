@@ -2,6 +2,16 @@
 
 import os
 
+from dotenv import load_dotenv
+
+# load_dotenv() alone only looks in the current working directory,
+# which fails when uvicorn is launched from the project root rather
+# than from inside backend/. Pointing it explicitly at backend/.env
+# (relative to this file's own location) makes it work regardless of
+# which directory the server was started from.
+_env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
+load_dotenv(dotenv_path=_env_path)
+
 from backend.agents.datasource.supplier_contract_agent import SupplierContractAgent
 from backend.agents.datasource.vendor_agent import VendorAgent
 from backend.agents.datasource.inventory_agent import InventoryAgent
