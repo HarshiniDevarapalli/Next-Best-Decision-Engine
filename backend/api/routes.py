@@ -1,87 +1,44 @@
 from fastapi import APIRouter
 
-from models.simulate_request import SimulateRequest
-from planner.simulator import run_simulation
-
 from models.request import WorkflowRequest
+from models.simulate_request import SimulateRequest
+
 from planner.planner import Planner
 from planner.workflow_loader import WorkflowLoader
+from planner.simulator import run_simulation
+
 from registry.registry import AgentRegistry
 
-# Datasource agents
-from agents.datasource.supplier_contract_agent import SupplierContractAgent
-from agents.datasource.inventory_agent import InventoryAgent
-from agents.datasource.vendor_agent import VendorAgent
-from agents.datasource.policy_agent import PolicyAgent
-from agents.datasource.news_agent import NewsAgent
-from agents.datasource.incident_history_agent import IncidentHistoryAgent
-
-# Reasoning agents
-from agents.reasoning.weak_signal_agent import WeakSignalAgent
-from agents.reasoning.risk_agent import RiskAssessmentAgent
-from agents.reasoning.recommendation_agent import RecommendationAgent
-from agents.reasoning.explainability_agent import ExplainabilityAgent
 
 router = APIRouter()
 
-# -----------------------------------
-# Platform Initialization
-# -----------------------------------
-
-workflow_loader = WorkflowLoader()
-registry = AgentRegistry()
-
-# Register datasource agents
-registry.register(SupplierContractAgent())
-registry.register(InventoryAgent())
-registry.register(VendorAgent())
-registry.register(PolicyAgent())
-registry.register(NewsAgent())
-registry.register(IncidentHistoryAgent())
-
-# Register reasoning agents
-registry.register(WeakSignalAgent())
-registry.register(RiskAssessmentAgent())
-registry.register(RecommendationAgent())
-registry.register(ExplainabilityAgent())
-
-planner = Planner(
-    workflow_loader=workflow_loader,
-    agent_registry=registry
-)
-
-# -----------------------------------
-# API Endpoint
-# -----------------------------------
 
 @router.post("/workflow/run")
-def run_workflow(request: WorkflowRequest):
-    """
-    Execute a workflow for a given crisis case.
-    """
+async def run_workflow(request: WorkflowRequest):
+
+    workflow_loader = WorkflowLoader()
+
+    registry = AgentRegistry()
+
+    planner = Planner(
+        workflow_loader=workflow_loader,
+        agent_registry=registry
+    )
 
     context = planner.execute_workflow(
-        workflow_name=request.workflow,
+        workflow_name=request.workflow_name,
         case_id=request.case_id
     )
 
     return context
 
+
 @router.post("/workflow/simulate")
-def simulate_workflow(request: SimulateRequest):
-    """
-    What-If Simulator.
+async def simulate_workflow(request: SimulateRequest):
 
-    Runs the same crisis_response pipeline twice on the same
-    base case: once with real data (baseline), and once with
-    the caller's field overrides applied (simulated). Returns
-    both results so the frontend can show a side-by-side
-    comparison of how the outcome changes.
+    workflow_loader = WorkflowLoader()
 
-    This does not modify /workflow/run, the Planner, or any
-    individual agent - it reuses the same registered agents
-    via a separate orchestration function (run_simulation).
-    """
+    registry = AgentRegistry()
 
     context = run_simulation(
         workflow_name=request.workflow,

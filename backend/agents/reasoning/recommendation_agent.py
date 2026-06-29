@@ -1,7 +1,11 @@
 """
 recommendation_agent.py
 
-Generates an enterprise Crisis Response Plan.
+Reasoning agent responsible for generating
+an AI Crisis Response Plan.
+
+The actual recommendation generation is delegated
+to a RecommendationEngine implementation.
 """
 
 import time
@@ -10,213 +14,89 @@ from agents.base_agent import BaseAgent
 
 from models.execution_context import ExecutionContext
 from models.agent_result import AgentResult
-from models.recommendation import (
-    RecommendationReport,
-    Priority
+
+from services.recommendation.base_recommender import RecommendationEngine
+from services.recommendation.llm_recommender import (
+    GeminiRecommendationEngine
 )
-from models.risk_report import RiskLevel
 
 
 class RecommendationAgent(BaseAgent):
 
-    @property
-    def name(self):
-        return "recommendation"
+    def __init__(
+
+        self,
+
+        engine: RecommendationEngine | None = None
+
+    ):
+
+        self.engine = engine or GeminiRecommendationEngine()
 
     @property
-    def description(self):
-        return "Generates an enterprise crisis response plan."
+    def name(self) -> str:
+        return "RecommendationAgent"
 
-    def execute(self, context):
+    @property
+    def description(self) -> str:
+        return (
+            "Generates an AI-powered crisis response plan."
+        )
+
+    def execute(
+        self,
+        context: ExecutionContext
+    ) -> AgentResult:
 
         start = time.perf_counter()
 
-        risk = context.context_data.get("risk_report")
+        weak_signal_report = context.context_data.get(
+            "weak_signal_report"
+        )
 
-        if risk is None:
+        risk_report = context.context_data.get(
+            "risk_report"
+        )
+
+        if weak_signal_report is None:
 
             return AgentResult(
+
                 agent_name=self.name,
+
                 status="FAILED",
-                message="Risk report not found."
-            )
 
-        if risk.overall_risk_level == RiskLevel.CRITICAL:
-
-            report = RecommendationReport(
-
-                title="Activate Enterprise Crisis Response",
-
-                priority=Priority.CRITICAL,
-
-                confidence=0.97,
-
-                summary="Critical operational disruption detected requiring immediate intervention.",
-
-                immediate_actions=[
-
-                    "Activate approved backup supplier.",
-
-                    "Notify executive crisis committee.",
-
-                    "Escalate to procurement leadership.",
-
-                    "Freeze non-essential procurement changes."
-
-                ],
-
-                short_term_actions=[
-
-                    "Validate inventory availability.",
-
-                    "Review supplier contracts.",
-
-                    "Coordinate with logistics."
-
-                ],
-
-                long_term_actions=[
-
-                    "Diversify supplier network.",
-
-                    "Reduce single points of failure.",
-
-                    "Update business continuity strategy."
-
-                ],
-
-                stakeholders_to_notify=[
-
-                    "CEO",
-
-                    "COO",
-
-                    "Procurement",
-
-                    "Legal",
-
-                    "Operations"
-
-                ],
-
-                business_continuity_actions=[
-
-                    "Activate Business Continuity Plan.",
-
-                    "Monitor recovery dashboard.",
-
-                    "Schedule crisis review every 4 hours."
-
-                ],
-
-                expected_business_outcome="Production downtime minimized through rapid supplier transition."
+                message="WeakSignalReport not found."
 
             )
 
-        elif risk.overall_risk_level == RiskLevel.HIGH:
+        if risk_report is None:
 
-            report = RecommendationReport(
+            return AgentResult(
 
-                title="High Risk Operational Response",
+                agent_name=self.name,
 
-                priority=Priority.HIGH,
+                status="FAILED",
 
-                confidence=0.93,
-
-                summary="High operational risk requiring coordinated response.",
-
-                immediate_actions=[
-                    "Notify procurement.",
-                    "Identify backup vendors."
-                ],
-
-                short_term_actions=[
-                    "Review inventory.",
-                    "Assess downstream impact."
-                ],
-
-                long_term_actions=[
-                    "Strengthen supplier resilience."
-                ],
-
-                stakeholders_to_notify=[
-                    "Operations",
-                    "Procurement"
-                ],
-
-                business_continuity_actions=[
-                    "Increase monitoring."
-                ],
-
-                expected_business_outcome="Reduce likelihood of operational disruption."
+                message="RiskReport not found."
 
             )
 
-        elif risk.overall_risk_level == RiskLevel.MEDIUM:
+        recommendation = self.engine.recommend(
 
-            report = RecommendationReport(
+            weak_signal_report,
 
-                title="Preventive Risk Mitigation",
+            risk_report
 
-                priority=Priority.MEDIUM,
+        )
 
-                confidence=0.89,
+        context.context_data[
+            "recommendation_report"
+        ] = recommendation
 
-                summary="Operational risks detected but currently manageable.",
-
-                immediate_actions=[
-                    "Monitor affected systems."
-                ],
-
-                short_term_actions=[
-                    "Review contingency plans."
-                ],
-
-                long_term_actions=[
-                    "Conduct resilience assessment."
-                ],
-
-                stakeholders_to_notify=[
-                    "Operations Manager"
-                ],
-
-                business_continuity_actions=[
-                    "Maintain readiness."
-                ],
-
-                expected_business_outcome="Prevent escalation."
-
-            )
-
-        else:
-
-            report = RecommendationReport(
-
-                title="Normal Operations",
-
-                priority=Priority.LOW,
-
-                confidence=0.98,
-
-                summary="No significant operational risks detected.",
-
-                immediate_actions=[],
-
-                short_term_actions=[],
-
-                long_term_actions=[],
-
-                stakeholders_to_notify=[],
-
-                business_continuity_actions=[],
-
-                expected_business_outcome="Continue normal business operations."
-
-            )
-
-        context.context_data["recommendation_report"] = report
-
-        elapsed = (time.perf_counter() - start) * 1000
+        elapsed = (
+            time.perf_counter() - start
+        ) * 1000
 
         result = AgentResult(
 
@@ -226,18 +106,28 @@ class RecommendationAgent(BaseAgent):
 
             execution_time_ms=elapsed,
 
-            message="Crisis response plan generated.",
+            message="Recommendation generated successfully.",
 
             data={
 
-                "title": report.title,
+                "title": recommendation.title,
 
-                "priority": report.priority.value,
+                "priority": recommendation.priority.value,
 
-                "confidence": report.confidence
+                "confidence": recommendation.confidence,
+
+                "immediate_actions": len(
+                    recommendation.immediate_actions
+                ),
+
+                "stakeholders": len(
+                    recommendation.stakeholders
+                )
 
             }
 
         )
+
+        context.agent_results.append(result)
 
         return result
