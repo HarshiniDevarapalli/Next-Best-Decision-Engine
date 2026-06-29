@@ -33,3 +33,18 @@ class WorkflowState(TypedDict):
     skipped_agents: List[str]
 
     response: Optional[Dict[str, Any]]
+
+
+    review_required: bool
+    review_status: Optional[str]
+
+    reviewer: Optional[str]
+    reviewer_role: Optional[str]
+
+    review_comments: Optional[str]
+
+    approved_recommendation: Optional[Dict[str, Any]]
+
+    review_timestamp: Optional[str]
+
+    audit_log: List[Dict[str, Any]]

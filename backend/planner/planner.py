@@ -77,12 +77,59 @@ class Planner:
 
             # Final response
             "response": None,
+
+            # -------------------------
+            # Human-in-the-Loop
+            # -------------------------
+
+            "review_required": execution_plan.get(
+                "requires_human_review",
+                False,
+            ),
+
+            "review_status": None,
+
+            "reviewer": None,
+
+            "reviewer_role": None,
+
+            "review_comments": None,
+
+            "approved_recommendation": None,
+
+            "review_timestamp": None,
+
+            "audit_log": [],
         }
 
         result = self.workflow.invoke(state)
+        # Human-in-the-Loop pause
+        if (
+            result.get("review_required")
+            and result.get("review_status") is None
+        ):
+            return {
+                "status": "WAITING_FOR_HUMAN_REVIEW",
+                "case_id": result.get("case_id"),
+                "planner": result.get("execution_plan"),
+                "recommendation": result.get("recommendation_report"),
+                "explainability": result.get("explainability_report"),
+                "message": "Awaiting human approval."
+            }
 
-        # During development, return the whole state if response wasn't produced.
+        # Normal execution
         if result.get("response") is not None:
             return result["response"]
 
         return result
+def resume_after_review(
+    self,
+    state: WorkflowState,
+):
+
+    result = self.workflow.invoke(state)
+
+    if result.get("response") is not None:
+        return result["response"]
+
+    return result

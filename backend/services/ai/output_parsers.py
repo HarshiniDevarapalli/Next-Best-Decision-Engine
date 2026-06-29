@@ -10,20 +10,30 @@ class ShadowComparison(BaseModel):
     recommended_output: Dict[str, Any] = Field(default_factory=dict)
 
 class PlannerOutput(BaseModel):
+    """
+    Planner output consumed by the LangGraph workflow.
+    The planner is responsible for deciding which agents execute.
+    """
+
     workflow: str
+    objective: str
     crisis_type: str
     execution_strategy: str
 
+    # Agents selected by the planner
     datasource_agents: List[str] = Field(default_factory=list)
     reasoning_agents: List[str] = Field(default_factory=list)
 
+    # Execution plan
     execution_order: List[str] = Field(default_factory=list)
     parallel_groups: List[List[str]] = Field(default_factory=list)
 
-    shadow_mode: bool
-    what_if: bool
-    requires_human_review: bool
+    # Planner decisions
+    shadow_mode: bool = False
+    what_if: bool = False
+    requires_human_review: bool = False
 
+    # Planner explanation
     planner_reasoning: str
     confidence: float
 

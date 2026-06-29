@@ -13,6 +13,7 @@ from backend.graph.nodes import (
     timeline_prediction_node,
     scenario_comparison_node,
     explainability_node,
+    human_review_node
 )
 
 
@@ -43,7 +44,9 @@ def build_enterprise_graph():
     graph.add_edge("cost_impact", "timeline_prediction")
     graph.add_edge("timeline_prediction", "scenario_comparison")
     graph.add_edge("scenario_comparison", "explainability")
-    graph.add_edge("explainability", END)
+    graph.add_node("human_review", "human_review_node")
+    graph.add_edge("explainability", "human_review")
+    graph.add_edge("human_review", END)
 
     return graph.compile()
 

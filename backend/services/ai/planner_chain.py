@@ -1,3 +1,4 @@
+
 # backend/services/ai/planner_chain.py
 
 from typing import List
@@ -9,29 +10,21 @@ from pydantic import BaseModel, Field
 
 class ExecutionPlan(BaseModel):
     workflow: str
-
     objective: str
-
     crisis_type: str
-
     execution_strategy: str
 
     datasource_agents: List[str] = Field(default_factory=list)
-
     reasoning_agents: List[str] = Field(default_factory=list)
 
     execution_order: List[str] = Field(default_factory=list)
-
     parallel_groups: List[List[str]] = Field(default_factory=list)
 
     shadow_mode: bool
-
     what_if: bool
-
     requires_human_review: bool
 
     planner_reasoning: str
-
     confidence: float
 
 
@@ -50,98 +43,156 @@ class PlannerChain:
                 (
                     "system",
                     """
-You are the MASTER PLANNER of an Enterprise Supply Chain Crisis
-Decision Engine.
+        You are the Enterprise Workflow Planner for an AI-driven supply chain decision platform.
 
-You NEVER solve the incident.
+        Your responsibility is to create an execution plan for every incident.
 
-You ONLY produce an execution plan.
+        ===========================================================
+        AVAILABLE DATASOURCE AGENTS
+        ===========================================================
 
-The platform contains these enterprise datasource agents:
+        - SupplierContractAgent
+        Retrieves supplier contracts, SLAs, obligations and penalties.
 
-1. SupplierContractAgent
-   - Contracts
-   - SLAs
-   - Obligations
-   - Dependencies
+        - VendorAgent
+        Retrieves approved vendors, supplier capacity and lead times.
 
-2. VendorAgent
-   - Vendor status
-   - Alternate vendors
-   - Vendor capability
-   - Vendor availability
+        - InventoryAgent
+        Retrieves inventory levels, warehouse information and shortages.
 
-3. InventoryAgent
-   - Inventory
-   - Safety stock
-   - Stock coverage
-   - Material availability
+        - PolicyAgent
+        Retrieves internal procurement and business continuity policies.
 
-4. PolicyAgent
-   - Internal policies
-   - Compliance
-   - Business continuity
-   - SOPs
+        - NewsAgent
+        Retrieves external intelligence and current events.
 
-5. NewsAgent
-   - External events
-   - Weather
-   - Geopolitics
-   - Natural disasters
-   - Supplier news
+        - IncidentHistoryAgent
+        Retrieves historical incidents and previous resolutions.
 
-6. IncidentHistoryAgent
-   - Similar historical incidents
-   - Lessons learned
-   - Previous resolutions
+        ===========================================================
+        AVAILABLE REASONING AGENTS
+        ===========================================================
 
-Reasoning agents:
+        - WeakSignalAgent
+        Parses the incident and detects weak signals.
 
-- WeakSignalAgent
-- RiskAgent
-- RecommendationAgent
-- ExplainabilityAgent
+        - RiskAgent
+        Performs enterprise risk assessment.
 
-Your responsibilities:
+        - RecommendationAgent
+        Generates mitigation recommendations.
 
-1. Understand the incident.
-2. Identify the crisis type.
-3. Decide which datasource agents are required.
-4. Decide reasoning order.
-5. Decide execution strategy.
-6. Decide parallel execution.
-7. Enable Shadow Mode whenever beneficial.
-8. Decide if human review is needed.
-9. Never invoke unnecessary agents.
+        - WhatIfAgent
+        Simulates alternative future scenarios.
 
-Only choose agents that provide useful information.
+        - DecisionScoringAgent
+        Scores and ranks candidate actions.
 
-Return structured output only.
-"""
+        - CostImpactAgent
+        Estimates financial and operational impact.
+
+        - TimelinePredictionAgent
+        Predicts recovery timeline and milestones.
+
+        - ScenarioComparisonAgent
+        Compares simulated scenarios and recommends the best option.
+
+        - ExplainabilityAgent
+        Produces the final explanation and reasoning summary.
+        This agent must always execute last.
+
+        ===========================================================
+        PLANNING RULES
+        ===========================================================
+
+        Datasource Agents
+        -----------------
+        Select ONLY the datasource agents required for the incident.
+
+        Reasoning Agents
+        ----------------
+
+        WeakSignalAgent
+        - Use whenever the incident requires parsing or weak signal detection.
+
+        RiskAgent
+        - Required for operational decision-making.
+
+        RecommendationAgent
+        - Execute after RiskAgent.
+
+        WhatIfAgent
+        Use when:
+        - incident severity is High or Critical
+        - uncertainty exists
+        - multiple response strategies are possible
+        - business continuity is affected
+
+        DecisionScoringAgent
+        Use when:
+        - recommendations need prioritization
+        - multiple actions are available
+        - WhatIfAgent is selected
+
+        CostImpactAgent
+        Use when:
+        - procurement decisions exist
+        - inventory decisions exist
+        - logistics decisions exist
+        - production is affected
+        - financial trade-offs are involved
+
+        TimelinePredictionAgent
+        Use when:
+        - recovery time matters
+        - production may stop
+        - logistics delays exist
+        - supplier disruptions exist
+
+        ScenarioComparisonAgent
+        Use when:
+        - multiple simulated scenarios exist
+        - WhatIfAgent has been selected
+
+        ExplainabilityAgent
+        - Always execute last.
+
+        ===========================================================
+        EXECUTION RULES
+        ===========================================================
+
+        1. Datasource agents may execute in parallel.
+        2. Reasoning agents execute sequentially.
+        3. execution_order must contain every selected agent.
+        4. parallel_groups should contain only datasource agents.
+        5. Return ONLY valid structured output matching ExecutionPlan.
+        6. Do not invent agent names.
+
+        The planner should choose the minimum number of agents necessary while ensuring complete decision support.
+        """
                 ),
                 (
                     "human",
                     """
-Workflow:
-{workflow}
+        Workflow:
+        {workflow}
 
-Mode:
-{mode}
+        Mode:
+        {mode}
 
-Incident:
-{incident}
-"""
+        Incident:
+        {incident}
+        """
                 ),
             ]
         )
-
         self.chain = self.prompt | self.llm
 
     def plan(
-        self,
-        workflow: str,
-        mode: str,
-        incident: str,
+    self,
+    workflow: str,
+    mode: str,
+    incident: str,
     ) -> ExecutionPlan:
 
         return self.chain.invoke(
@@ -151,31 +202,3 @@ Incident:
                 "incident": incident,
             }
         )
-# backend/services/ai/planner_chain.py
-# (Update planner prompt)
-
-# Add this inside the planner system prompt:
-
-"""
-When appropriate, enable advanced decision intelligence.
-
-Set:
-
-simulation_enabled
-decision_scoring_enabled
-cost_analysis_enabled
-timeline_prediction_enabled
-scenario_comparison_enabled
-
-Enable them for:
-
-- Supply chain disruption
-- Logistics delay
-- Vendor failure
-- Inventory shortage
-- Manufacturing disruption
-- Contract breach
-- Business continuity incidents
-
-Disable only for trivial informational workflows.
-"""
