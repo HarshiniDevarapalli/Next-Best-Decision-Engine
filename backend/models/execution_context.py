@@ -17,7 +17,7 @@ class ExecutionContext(BaseModel):
 
     workflow_name: str
 
-    customer_id: str
+    case_id: str
 
     status: str = "RUNNING"
 

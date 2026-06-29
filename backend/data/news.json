@@ -1,14 +1,41 @@
 [
   {
-    "customer_id": "cust_001",
-    "headline": "Acme Corp announces leadership change",
-    "sentiment": "neutral",
-    "date": "2026-06-10"
+    "case_id": "incident_001",
+    "headline": "Major earthquake disrupts semiconductor manufacturing in Taiwan.",
+    "impact": "Critical",
+    "source": "Reuters",
+    "summary": "Several supplier factories have halted production due to infrastructure damage."
   },
+
   {
-    "customer_id": "cust_001",
-    "headline": "Acme Corp faces budget cuts in Q3",
-    "sentiment": "negative",
-    "date": "2026-06-18"
+    "case_id": "incident_002",
+    "headline": "Minor port congestion delays shipments across Southeast Asia.",
+    "impact": "Low",
+    "source": "Bloomberg",
+    "summary": "Shipping delays of one to two days are expected, with minimal impact on supply chains."
+  },
+
+  {
+    "case_id": "incident_003",
+    "headline": "Fire at major semiconductor supplier suspends production indefinitely.",
+    "impact": "Critical",
+    "source": "Reuters",
+    "summary": "A fire damaged production lines at a key supplier, significantly reducing chip availability worldwide."
+  },
+
+  {
+    "case_id": "incident_004",
+    "headline": "Global ransomware attack disrupts enterprise infrastructure providers.",
+    "impact": "High",
+    "source": "The Wall Street Journal",
+    "summary": "Multiple technology vendors reported outages after a coordinated ransomware campaign affected critical systems."
+  },
+
+  {
+    "case_id": "incident_005",
+    "headline": "New environmental regulations tighten chemical import requirements.",
+    "impact": "Medium",
+    "source": "Financial Times",
+    "summary": "Manufacturers may experience delays while adapting to updated environmental compliance regulations."
   }
 ]

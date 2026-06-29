@@ -1,0 +1,53 @@
+{
+  "workflow_name": "crisis_response",
+  "description": "Enterprise Crisis Intelligence Workflow",
+  "version": "1.0",
+
+  "metadata": {
+    "domain": "Enterprise Crisis Intelligence",
+    "author": "Team NBDE"
+  },
+
+  "agents": [
+    {
+      "name": "supplier_contract",
+      "enabled": true
+    },
+    {
+      "name": "inventory",
+      "enabled": true
+    },
+    {
+      "name": "vendor",
+      "enabled": true
+    },
+    {
+      "name": "policy",
+      "enabled": true
+    },
+    {
+      "name": "news",
+      "enabled": true
+    },
+    {
+      "name": "incident_history",
+      "enabled": true
+    },
+    {
+      "name": "weak_signal",
+      "enabled": true
+    },
+    {
+      "name": "risk",
+      "enabled": true
+    },
+    {
+      "name": "recommendation",
+      "enabled": true
+    },
+    {
+      "name": "explainability",
+      "enabled": true
+    }
+  ]
+}

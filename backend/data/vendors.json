@@ -1,0 +1,86 @@
+[
+  {
+    "case_id": "incident_001",
+    "vendor_name": "XYZ Electronics",
+    "approved_vendor": true,
+    "lead_time_days": 6,
+    "capacity_available": true,
+    "estimated_cost_increase": "8%"
+  },
+  {
+    "case_id": "incident_001",
+    "vendor_name": "Global Chips Inc.",
+    "approved_vendor": false,
+    "lead_time_days": 12,
+    "capacity_available": true,
+    "estimated_cost_increase": "5%"
+  },
+
+  {
+    "case_id": "incident_002",
+    "vendor_name": "PowerTech Components",
+    "approved_vendor": true,
+    "lead_time_days": 3,
+    "capacity_available": true,
+    "estimated_cost_increase": "2%"
+  },
+  {
+    "case_id": "incident_002",
+    "vendor_name": "Universal Supplies Ltd.",
+    "approved_vendor": true,
+    "lead_time_days": 5,
+    "capacity_available": true,
+    "estimated_cost_increase": "4%"
+  },
+
+  {
+    "case_id": "incident_003",
+    "vendor_name": "Asia Semiconductor Corp.",
+    "approved_vendor": false,
+    "lead_time_days": 18,
+    "capacity_available": false,
+    "estimated_cost_increase": "15%"
+  },
+  {
+    "case_id": "incident_003",
+    "vendor_name": "Prime Silicon Ltd.",
+    "approved_vendor": false,
+    "lead_time_days": 20,
+    "capacity_available": false,
+    "estimated_cost_increase": "18%"
+  },
+
+  {
+    "case_id": "incident_004",
+    "vendor_name": "SecureNet Backup Services",
+    "approved_vendor": true,
+    "lead_time_days": 4,
+    "capacity_available": false,
+    "estimated_cost_increase": "10%"
+  },
+  {
+    "case_id": "incident_004",
+    "vendor_name": "CyberShield Solutions",
+    "approved_vendor": false,
+    "lead_time_days": 7,
+    "capacity_available": true,
+    "estimated_cost_increase": "12%"
+  },
+
+  {
+    "case_id": "incident_005",
+    "vendor_name": "Green Materials Ltd.",
+    "approved_vendor": true,
+    "lead_time_days": 8,
+    "capacity_available": true,
+    "estimated_cost_increase": "6%"
+  },
+  {
+    "case_id": "incident_005",
+    "vendor_name": "EcoSource Global",
+    "approved_vendor": true,
+    "lead_time_days": 10,
+    "capacity_available": true,
+    "estimated_cost_increase": "5%"
+  }
+]

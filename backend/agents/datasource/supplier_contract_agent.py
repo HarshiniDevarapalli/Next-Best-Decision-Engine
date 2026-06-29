@@ -6,28 +6,28 @@ from models.execution_context import ExecutionContext
 from models.agent_result import AgentResult
 
 
-class NewsAgent(BaseAgent):
+class SupplierContractAgent(BaseAgent):
 
     @property
     def name(self):
-        return "news"
+        return "supplier_contract"
 
     @property
     def description(self):
-        return "Retrieve news related to the crisis."
+        return "Retrieve supplier contract information."
 
     def execute(self, context: ExecutionContext) -> AgentResult:
 
-        data_path = Path("data/news.json")
+        data_path = Path("data/supplier_contracts.json")
 
         with open(data_path, "r") as file:
-            news = json.load(file)
+            suppliers = json.load(file)
 
-        article = next(
+        supplier = next(
             (
-                item
-                for item in news
-                if item["case_id"] == context.case_id
+                s
+                for s in suppliers
+                if s["case_id"] == context.case_id
             ),
             {}
         )
@@ -35,5 +35,5 @@ class NewsAgent(BaseAgent):
         return AgentResult(
             agent_name=self.name,
             status="SUCCESS",
-            data=article
+            data=supplier
         )

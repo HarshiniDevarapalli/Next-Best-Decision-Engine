@@ -6,34 +6,33 @@ from models.execution_context import ExecutionContext
 from models.agent_result import AgentResult
 
 
-class NewsAgent(BaseAgent):
+class VendorAgent(BaseAgent):
 
     @property
     def name(self):
-        return "news"
+        return "vendor"
 
     @property
     def description(self):
-        return "Retrieve news related to the crisis."
+        return "Retrieve approved alternative vendors."
 
     def execute(self, context: ExecutionContext) -> AgentResult:
 
-        data_path = Path("data/news.json")
+        data_path = Path("data/vendors.json")
 
         with open(data_path, "r") as file:
-            news = json.load(file)
+            vendors = json.load(file)
 
-        article = next(
-            (
-                item
-                for item in news
-                if item["case_id"] == context.case_id
-            ),
-            {}
-        )
+        vendor_records = [
+            vendor
+            for vendor in vendors
+            if vendor["case_id"] == context.case_id
+        ]
 
         return AgentResult(
             agent_name=self.name,
             status="SUCCESS",
-            data=article
+            data={
+                "vendors": vendor_records
+            }
         )

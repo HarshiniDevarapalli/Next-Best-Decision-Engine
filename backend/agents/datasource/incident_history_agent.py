@@ -6,34 +6,33 @@ from models.execution_context import ExecutionContext
 from models.agent_result import AgentResult
 
 
-class NewsAgent(BaseAgent):
+class IncidentHistoryAgent(BaseAgent):
 
     @property
     def name(self):
-        return "news"
+        return "incident_history"
 
     @property
     def description(self):
-        return "Retrieve news related to the crisis."
+        return "Retrieve historical incidents."
 
     def execute(self, context: ExecutionContext) -> AgentResult:
 
-        data_path = Path("data/news.json")
+        data_path = Path("data/incident_history.json")
 
         with open(data_path, "r") as file:
-            news = json.load(file)
+            incidents = json.load(file)
 
-        article = next(
-            (
-                item
-                for item in news
-                if item["case_id"] == context.case_id
-            ),
-            {}
-        )
+        incident_records = [
+            incident
+            for incident in incidents
+            if incident["case_id"] == context.case_id
+        ]
 
         return AgentResult(
             agent_name=self.name,
             status="SUCCESS",
-            data=article
+            data={
+                "incident_history": incident_records
+            }
         )
