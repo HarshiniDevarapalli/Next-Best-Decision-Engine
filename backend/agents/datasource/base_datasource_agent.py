@@ -41,7 +41,8 @@ class BaseDatasourceAgent(BaseAgent, ABC):
     ) -> Dict[str, Any]:
 
         records = EnterpriseSearch().search(
-            parsed_incident,
+            datasource=self.DATASOURCE,
+            parsed_incident=parsed_incident,
             k=5,
         )
 

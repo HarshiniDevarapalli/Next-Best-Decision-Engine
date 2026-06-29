@@ -1,16 +1,13 @@
 # backend/agents/reasoning/weak_signal_agent.py
-# (Final integrated version)
 
 from typing import Any, Dict
 
 from backend.agents.base_agent import BaseAgent
-
 from backend.services.ai.incident_parser import IncidentParser
-from backend.services.aiweak_signal.llm_detector import LLMWeakSignalDetector
+from backend.services.weak_signal.llm_detector import LLMWeakSignalDetector
 
 
 class WeakSignalAgent(BaseAgent):
-
     def __init__(
         self,
         rule_detector,
@@ -28,7 +25,6 @@ class WeakSignalAgent(BaseAgent):
         enterprise_context: Dict[str, Any],
         planner_context: Dict[str, Any],
     ) -> Dict[str, Any]:
-
         # Parse incident
         parsed_incident = self.parser.parse(incident)
 

@@ -1,5 +1,7 @@
 # backend/test_phase4.py
+from dotenv import load_dotenv
 
+load_dotenv()
 from backend.planner.planner import Planner
 
 

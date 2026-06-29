@@ -1,4 +1,4 @@
-from backend.servicesweak_signal.llm_detector import LLMWeakSignalDetector
+from backend.services.weak_signal.llm_detector import LLMWeakSignalDetector
 
 detector = LLMWeakSignalDetector()
 

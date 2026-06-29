@@ -10,7 +10,7 @@ from typing import List
 
 from pydantic import BaseModel, Field
 
-from backend.servicesweak_signal.schemas import SignalType
+from backend.services.weak_signal.schemas import SignalType
 
 
 class OperationalHealth(str, Enum):

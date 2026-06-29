@@ -1,18 +1,21 @@
-# backend/agents/reasoning/decision_scoring_agent.py
-
 from typing import Any, Dict
 
 from backend.agents.base_agent import BaseAgent
-from backend.services.ai.decision_scoring_chain import DecisionScoringChain
+from backend.services.ai.timeline_prediction_chain import TimelinePredictionChain
 
 
-class DecisionScoringAgent(BaseAgent):
+class TimelinePredictionAgent(BaseAgent):
+    """
+    Predicts the enterprise recovery timeline.
+    """
+
     def __init__(self, api_key: str):
         super().__init__(
-            "DecisionScoringAgent",
-            "Scores and ranks candidate decisions."
+            "TimelinePredictionAgent",
+            "Predicts recovery timeline and milestones."
         )
-        self.chain = DecisionScoringChain(api_key)
+
+        self.chain = TimelinePredictionChain(api_key)
 
     def execute(
         self,

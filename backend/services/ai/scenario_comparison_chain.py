@@ -1,32 +1,81 @@
-# backend/agents/reasoning/scenario_comparison_agent.py
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
 
-from typing import Any, Dict
-
-from backend.agents.base_agent import BaseAgent
-from backend.services.aiscenario_comparison_chain import (
-    ScenarioComparisonChain,
-)
+from backend.services.ai.output_parsers import ScenarioComparisonReport
 
 
-class ScenarioComparisonAgent(BaseAgent):
+class ScenarioComparisonChain:
+    """
+    Compares simulated business scenarios and recommends the strongest one.
+    """
 
     def __init__(self, api_key: str):
-        super().__init__("ScenarioComparisonAgent")
-        self.chain = ScenarioComparisonChain(api_key)
 
-    def execute(
-        self,
-        simulation_report: Dict[str, Any],
-        decision_scores: Dict[str, Any],
-        cost_report: Dict[str, Any],
-        timeline_report: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        self.llm = ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash",
+            google_api_key=api_key,
+            temperature=0,
+        ).with_structured_output(ScenarioComparisonReport)
 
-        result = self.chain.invoke(
-            simulation_report=simulation_report,
-            decision_scores=decision_scores,
-            cost_report=cost_report,
-            timeline_report=timeline_report,
+        self.prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    """
+You are an Enterprise Scenario Comparison Engine.
+
+Compare all available scenarios.
+
+Evaluate:
+
+- advantages
+- disadvantages
+- overall score
+
+Recommend the strongest scenario.
+
+Return ONLY the structured output.
+"""
+                ),
+                (
+                    "human",
+                    """
+Simulation Report
+
+{simulation_report}
+
+Decision Scores
+
+{decision_scores}
+
+Cost Analysis
+
+{cost_report}
+
+Timeline Prediction
+
+{timeline_report}
+"""
+                ),
+            ]
         )
 
-        return result.model_dump()
+        self.chain = self.prompt | self.llm
+
+    def invoke(
+        self,
+        *,
+        simulation_report: dict,
+        decision_scores: dict,
+        cost_report: dict,
+        timeline_report: dict,
+    ) -> ScenarioComparisonReport:
+
+        return self.chain.invoke(
+            {
+                "simulation_report": simulation_report,
+                "decision_scores": decision_scores,
+                "cost_report": cost_report,
+                "timeline_report": timeline_report,
+            }
+        )

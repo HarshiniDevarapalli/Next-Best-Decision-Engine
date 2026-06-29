@@ -1,30 +1,78 @@
-# backend/agents/reasoning/timeline_prediction_agent.py
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
 
-from typing import Any, Dict
-
-from backend.agents.base_agent import BaseAgent
-from backend.services.aitimeline_prediction_chain import TimelinePredictionChain
+from backend.services.ai.output_parsers import TimelinePredictionReport
 
 
-class TimelinePredictionAgent(BaseAgent):
+class TimelinePredictionChain:
+    """
+    Predicts recovery timeline and critical milestones.
+    """
 
     def __init__(self, api_key: str):
-        super().__init__("TimelinePredictionAgent")
-        self.chain = TimelinePredictionChain(api_key)
 
-    def execute(
-        self,
-        parsed_incident: Dict[str, Any],
-        risk_report: Dict[str, Any],
-        recommendation_report: Dict[str, Any],
-        simulation_report: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        self.llm = ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash",
+            google_api_key=api_key,
+            temperature=0,
+        ).with_structured_output(TimelinePredictionReport)
 
-        result = self.chain.invoke(
-            incident=parsed_incident,
-            risk_report=risk_report,
-            recommendation_report=recommendation_report,
-            simulation_report=simulation_report,
+        self.prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    """
+You are an Enterprise Recovery Timeline Predictor.
+
+Estimate:
+
+- recovery duration
+- critical path
+- milestones
+- blockers
+
+Return ONLY the structured output.
+"""
+                ),
+                (
+                    "human",
+                    """
+Incident
+
+{incident}
+
+Risk Report
+
+{risk_report}
+
+Recommendation Report
+
+{recommendation_report}
+
+Simulation Report
+
+{simulation_report}
+"""
+                ),
+            ]
         )
 
-        return result.model_dump()
+        self.chain = self.prompt | self.llm
+
+    def invoke(
+        self,
+        *,
+        incident: dict,
+        risk_report: dict,
+        recommendation_report: dict,
+        simulation_report: dict,
+    ) -> TimelinePredictionReport:
+
+        return self.chain.invoke(
+            {
+                "incident": incident,
+                "risk_report": risk_report,
+                "recommendation_report": recommendation_report,
+                "simulation_report": simulation_report,
+            }
+        )

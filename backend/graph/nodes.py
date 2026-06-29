@@ -1,7 +1,4 @@
 # backend/graph/nodes.py
-# (Final integrated version)
-
-from concurrent.futures import ThreadPoolExecutor
 
 from backend.registry.registry import registry
 
@@ -27,51 +24,32 @@ def incident_parser_node(state):
 
 
 def datasource_node(state):
+    """
+    Execute datasource agents sequentially.
+    Parallel execution is disabled to avoid concurrent
+    Chroma initialization during debugging.
+    """
 
     plan = state["execution_plan"]
 
     datasource_agents = plan.get("datasource_agents", [])
-    execution_order = plan.get("execution_order", datasource_agents)
-    parallel_groups = plan.get("parallel_groups", [])
+    execution_order = plan.get(
+        "execution_order",
+        datasource_agents,
+    )
 
     context = {}
 
-    executed = state.setdefault("executed_agents", [])
-    skipped = state.setdefault("skipped_agents", [])
+    executed = state.setdefault(
+        "executed_agents",
+        [],
+    )
+    skipped = state.setdefault(
+        "skipped_agents",
+        [],
+    )
 
-    # Parallel execution
-    for group in parallel_groups:
-
-        with ThreadPoolExecutor(max_workers=len(group)) as executor:
-
-            futures = {}
-
-            for name in group:
-
-                agent = registry.get_datasource_agent(name)
-
-                if agent is None:
-                    skipped.append(name)
-                    continue
-
-                futures[
-                    executor.submit(
-                        agent.execute,
-                        state["parsed_incident"],
-                    )
-                ] = name
-
-            for future, name in futures.items():
-
-                context[name] = future.result()
-
-                executed.append(name)
-
-    # Sequential execution
     for name in execution_order:
-
-        if name in context:
-            continue
 
         if name not in datasource_agents:
             continue
@@ -121,7 +99,9 @@ def weak_signal_node(state):
 
 def risk_node(state):
 
-    agent = registry.get_reasoning_agent("RiskAgent")
+    agent = registry.get_reasoning_agent(
+        "RiskAgent"
+    )
 
     state["risk_report"] = agent.execute(
         parsed_incident=state["parsed_incident"],
@@ -152,8 +132,84 @@ def recommendation_node(state):
     return state
 
 
-# backend/graph/nodes.py
-# (Update explainability_node)
+def simulation_node(state):
+
+    agent = registry.get_reasoning_agent(
+        "WhatIfAgent"
+    )
+
+    state["simulation_report"] = agent.execute(
+        parsed_incident=state["parsed_incident"],
+        datasource_context=state["datasource_context"],
+        risk_report=state["risk_report"],
+        recommendation_report=state["recommendation_report"],
+    )
+
+    return state
+
+
+def decision_scoring_node(state):
+
+    agent = registry.get_reasoning_agent(
+        "DecisionScoringAgent"
+    )
+
+    state["decision_scores"] = agent.execute(
+        parsed_incident=state["parsed_incident"],
+        risk_report=state["risk_report"],
+        recommendation_report=state["recommendation_report"],
+        simulation_report=state["simulation_report"],
+    )
+
+    return state
+
+
+def cost_impact_node(state):
+
+    agent = registry.get_reasoning_agent(
+        "CostImpactAgent"
+    )
+
+    state["cost_report"] = agent.execute(
+        parsed_incident=state["parsed_incident"],
+        recommendation_report=state["recommendation_report"],
+        simulation_report=state["simulation_report"],
+    )
+
+    return state
+
+
+def timeline_prediction_node(state):
+
+    agent = registry.get_reasoning_agent(
+        "TimelinePredictionAgent"
+    )
+
+    state["timeline_report"] = agent.execute(
+        parsed_incident=state["parsed_incident"],
+        risk_report=state["risk_report"],
+        recommendation_report=state["recommendation_report"],
+        simulation_report=state["simulation_report"],
+    )
+
+    return state
+
+
+def scenario_comparison_node(state):
+
+    agent = registry.get_reasoning_agent(
+        "ScenarioComparisonAgent"
+    )
+
+    state["scenario_comparison"] = agent.execute(
+        simulation_report=state["simulation_report"],
+        decision_scores=state["decision_scores"],
+        cost_report=state["cost_report"],
+        timeline_report=state["timeline_report"],
+    )
+
+    return state
+
 
 def explainability_node(state):
 
@@ -198,85 +254,5 @@ def explainability_node(state):
             "skipped_agents": state["skipped_agents"],
         },
     }
-
-    return state
-
-# backend/graph/nodes.py
-# (Add these new nodes)
-
-def simulation_node(state):
-
-    agent = registry.get_reasoning_agent("WhatIfAgent")
-
-    state["simulation_report"] = agent.execute(
-        parsed_incident=state["parsed_incident"],
-        datasource_context=state["datasource_context"],
-        risk_report=state["risk_report"],
-        recommendation_report=state["recommendation_report"],
-    )
-
-    return state
-
-
-def decision_scoring_node(state):
-
-    agent = registry.get_reasoning_agent(
-        "DecisionScoringAgent"
-    )
-
-    state["decision_scores"] = agent.execute(
-        parsed_incident=state["parsed_incident"],
-        risk_report=state["risk_report"],
-        recommendation_report=state["recommendation_report"],
-        simulation_report=state["simulation_report"],
-    )
-
-    return state
-
-
-def cost_impact_node(state):
-
-    agent = registry.get_reasoning_agent(
-        "CostImpactAgent"
-    )
-
-    state["cost_report"] = agent.execute(
-        parsed_incident=state["parsed_incident"],
-        recommendation_report=state["recommendation_report"],
-        simulation_report=state["simulation_report"],
-    )
-
-    return state
-# backend/graph/nodes.py
-# (Continue adding Phase 4 nodes)
-
-def timeline_prediction_node(state):
-
-    agent = registry.get_reasoning_agent(
-        "TimelinePredictionAgent"
-    )
-
-    state["timeline_report"] = agent.execute(
-        parsed_incident=state["parsed_incident"],
-        risk_report=state["risk_report"],
-        recommendation_report=state["recommendation_report"],
-        simulation_report=state["simulation_report"],
-    )
-
-    return state
-
-
-def scenario_comparison_node(state):
-
-    agent = registry.get_reasoning_agent(
-        "ScenarioComparisonAgent"
-    )
-
-    state["scenario_comparison"] = agent.execute(
-        simulation_report=state["simulation_report"],
-        decision_scores=state["decision_scores"],
-        cost_report=state["cost_report"],
-        timeline_report=state["timeline_report"],
-    )
 
     return state

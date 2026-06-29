@@ -1,45 +1,27 @@
-# backend/agents/base_agent.py
-
 from abc import ABC, abstractmethod
 from typing import Any
-
-from backend.models.execution_context import ExecutionContext
-from backend.models.agent_result import AgentResult
 
 
 class BaseAgent(ABC):
     """
-    Abstract base class for all agents in the Next Best Decision Engine.
-
-    Every agent in the platform (data source, reasoning, or future plugins)
-    must inherit from this class and implement the execute() method.
+    Base class for every agent in the system.
     """
 
+    def __init__(self, name: str, description: str = ""):
+        self._name = name
+        self._description = description
+
     @property
-    @abstractmethod
     def name(self) -> str:
-        """Unique name of the agent."""
-        pass
+        return self._name
 
     @property
-    @abstractmethod
     def description(self) -> str:
-        """Short description of the agent's responsibility."""
-        pass
+        return self._description
 
     @abstractmethod
-    def execute(self, context: ExecutionContext) -> AgentResult:
+    def execute(self, *args: Any, **kwargs: Any):
         """
         Execute the agent.
-
-        Parameters
-        ----------
-        context : ExecutionContext
-            Shared execution context containing the current workflow state.
-
-        Returns
-        -------
-        AgentResult
-            Standardized result returned by every agent.
         """
         pass

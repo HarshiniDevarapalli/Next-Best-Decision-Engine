@@ -1,12 +1,16 @@
 # backend/services/weak_signal/llm_detector.py
 
 from langchain_google_genai import ChatGoogleGenerativeAI
-
 from langchain_core.prompts import ChatPromptTemplate
-from backend.services.ai.output_parsers import ShadowComparison
 
 
 class LLMWeakSignalDetector:
+    """
+    LLM-based weak signal detector.
+
+    Uses Gemini to identify emerging weak signals from an incident and
+    enterprise context.
+    """
 
     def __init__(self, api_key: str):
 
@@ -23,44 +27,41 @@ class LLMWeakSignalDetector:
                     """
 You are an Enterprise Weak Signal Detection Agent.
 
-Analyze the incident together with the enterprise context.
+Your job is to identify early warning indicators from an enterprise incident.
 
-Detect weak signals that could become future enterprise risks.
+Analyze:
+- the incident
+- parsed incident information
+- enterprise context
 
-Return JSON only.
+Identify:
+- weak signals
+- emerging risks
+- signal confidence
+- signal category
+- supporting evidence
 
-Output format:
+Do NOT:
+- recommend actions
+- calculate business risk
+- estimate financial impact
+- explain recommendations
 
-{
-    "signals":[
-        {
-            "title":"",
-            "description":"",
-            "severity":"",
-            "confidence":0.0,
-            "source":"",
-            "category":""
-        }
-    ]
-}
-
-Do not recommend actions.
-Do not calculate risk.
-Do not explain.
-Only detect weak signals.
-"""
+Respond ONLY with valid JSON.
+""",
                 ),
                 (
                     "human",
                     """
-Incident
-
+Incident:
 {incident}
 
-Enterprise Context
+Parsed Incident:
+{parsed_incident}
 
-{context}
-"""
+Enterprise Context:
+{enterprise_context}
+""",
                 ),
             ]
         )
@@ -69,19 +70,23 @@ Enterprise Context
 
     def detect(
         self,
+        *,
         incident: str,
         parsed_incident: dict,
         context: dict,
+        planner_context: dict | None = None,
     ):
 
         response = self.chain.invoke(
             {
                 "incident": incident,
-                "context": {
-                    "parsed_incident": parsed_incident,
-                    "enterprise_context": context,
-                },
+                "parsed_incident": parsed_incident,
+                "enterprise_context": context,
             }
         )
 
-        return response.content
+        # If Gemini returns plain text
+        if hasattr(response, "content"):
+            return response.content
+
+        return response

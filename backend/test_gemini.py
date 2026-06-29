@@ -1,4 +1,4 @@
-from backend.servicesllm.gemini_client import GeminiClient
+from backend.services.llm.gemini_client import GeminiClient
 
 client = GeminiClient()
 

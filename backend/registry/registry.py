@@ -1,5 +1,4 @@
 # backend/registry/registry.py
-# (Final integration update for Planner-driven architecture)
 
 import os
 
@@ -15,13 +14,24 @@ from backend.agents.reasoning.risk_agent import RiskAgent
 from backend.agents.reasoning.recommendation_agent import RecommendationAgent
 from backend.agents.reasoning.explainability_agent import ExplainabilityAgent
 
-from backend.servicesweak_signal.rule_detector import RuleBasedDetector
+# Phase 4 agents
+from backend.agents.reasoning.what_if_agent import WhatIfAgent
+from backend.agents.reasoning.decision_scoring_agent import DecisionScoringAgent
+from backend.agents.reasoning.cost_impact_agent import CostImpactAgent
+from backend.agents.reasoning.timeline_prediction_agent import TimelinePredictionAgent
+from backend.agents.reasoning.scenario_comparison_agent import (
+    ScenarioComparisonAgent,
+)
+
+from backend.services.weak_signal.rule_detector import RuleBasedDetector
 
 
 class AgentRegistry:
+    """
+    Central registry for all datasource and reasoning agents.
+    """
 
     def __init__(self):
-
         api_key = os.getenv("GEMINI_API_KEY")
 
         self.datasource_agents = {
@@ -34,6 +44,7 @@ class AgentRegistry:
         }
 
         self.reasoning_agents = {
+            # Phase 3
             "WeakSignalAgent": WeakSignalAgent(
                 rule_detector=RuleBasedDetector(),
                 api_key=api_key,
@@ -41,6 +52,13 @@ class AgentRegistry:
             "RiskAgent": RiskAgent(api_key),
             "RecommendationAgent": RecommendationAgent(api_key),
             "ExplainabilityAgent": ExplainabilityAgent(api_key),
+
+            # Phase 4
+            "WhatIfAgent": WhatIfAgent(api_key),
+            "DecisionScoringAgent": DecisionScoringAgent(api_key),
+            "CostImpactAgent": CostImpactAgent(api_key),
+            "TimelinePredictionAgent": TimelinePredictionAgent(api_key),
+            "ScenarioComparisonAgent": ScenarioComparisonAgent(api_key),
         }
 
     def get_datasource_agent(self, agent_name: str):
@@ -56,31 +74,5 @@ class AgentRegistry:
         return self.reasoning_agents
 
 
-# Global registry used by LangGraph
+# Global registry
 registry = AgentRegistry()
-
-# backend/registry/registry.py
-# (Add Phase 4 reasoning agents)
-
-from backend.agents.reasoning.what_if_agent import WhatIfAgent
-from backend.agents.reasoning.decision_scoring_agent import DecisionScoringAgent
-from backend.agents.reasoning.cost_impact_agent import CostImpactAgent
-from backend.agents.reasoning.timeline_prediction_agent import TimelinePredictionAgent
-from backend.agents.reasoning.scenario_comparison_agent import ScenarioComparisonAgent
-
-
-# Add inside self.reasoning_agents
-
-self.reasoning_agents.update({
-
-    "WhatIfAgent": WhatIfAgent(api_key),
-
-    "DecisionScoringAgent": DecisionScoringAgent(api_key),
-
-    "CostImpactAgent": CostImpactAgent(api_key),
-
-    "TimelinePredictionAgent": TimelinePredictionAgent(api_key),
-
-    "ScenarioComparisonAgent": ScenarioComparisonAgent(api_key),
-
-})
