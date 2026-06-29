@@ -267,29 +267,47 @@ def human_review_node(state: WorkflowState) -> WorkflowState:
     """
     Human-in-the-Loop review node.
 
-    If review is not required, simply skip this node.
-    During API execution, this node will be resumed after
-    the reviewer submits their decision.
+    If review is not required, skip this node.
+    If review is required but no decision has been made,
+    pause the workflow and return all reasoning outputs.
     """
 
     if not state.get("review_required", False):
         state["skipped_agents"].append("HumanReviewAgent")
         return state
 
-    # Workflow pauses here until a human reviews the decision.
+    # Pause workflow until reviewer responds
     if state.get("review_status") is None:
 
         state["response"] = {
             "status": "WAITING_FOR_HUMAN_REVIEW",
             "case_id": state.get("case_id"),
-            "recommendation": state.get("recommendation_report"),
+
+            # Planner
             "planner": state.get("execution_plan"),
+
+            # AI Outputs
+            "risk": state.get("risk_report"),
+            "recommendation": state.get("recommendation_report"),
+            "simulation": state.get("simulation_report"),
+            "decision_scoring": state.get("decision_scores"),
+            "cost_analysis": state.get("cost_report"),
+            "timeline_prediction": state.get("timeline_report"),
+            "scenario_comparison": state.get("scenario_comparison"),
+            "explainability": state.get("explainability_report"),
+
+            # Execution Trace
+            "execution_trace": {
+                "executed_agents": state.get("executed_agents", []),
+                "skipped_agents": state.get("skipped_agents", []),
+            },
+
             "message": "Awaiting reviewer approval before continuing.",
         }
 
         return state
 
-    # Resume workflow after review submission.
+    # Resume workflow after review
     agent = HumanReviewAgent()
 
     state = agent.execute(

@@ -13,7 +13,7 @@ from backend.graph.nodes import (
     timeline_prediction_node,
     scenario_comparison_node,
     explainability_node,
-    human_review_node
+    human_review_node,
 )
 
 
@@ -21,6 +21,7 @@ def build_enterprise_graph():
 
     graph = StateGraph(WorkflowState)
 
+    # Register Nodes
     graph.add_node("incident_parser", incident_parser_node)
     graph.add_node("datasource", datasource_node)
     graph.add_node("weak_signal", weak_signal_node)
@@ -32,7 +33,9 @@ def build_enterprise_graph():
     graph.add_node("timeline_prediction", timeline_prediction_node)
     graph.add_node("scenario_comparison", scenario_comparison_node)
     graph.add_node("explainability", explainability_node)
+    graph.add_node("human_review", human_review_node)
 
+    # Workflow
     graph.add_edge(START, "incident_parser")
     graph.add_edge("incident_parser", "datasource")
     graph.add_edge("datasource", "weak_signal")
@@ -44,7 +47,6 @@ def build_enterprise_graph():
     graph.add_edge("cost_impact", "timeline_prediction")
     graph.add_edge("timeline_prediction", "scenario_comparison")
     graph.add_edge("scenario_comparison", "explainability")
-    graph.add_node("human_review", "human_review_node")
     graph.add_edge("explainability", "human_review")
     graph.add_edge("human_review", END)
 

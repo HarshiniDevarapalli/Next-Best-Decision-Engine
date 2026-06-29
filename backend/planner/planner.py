@@ -1,6 +1,7 @@
 # backend/planner/planner.py
 
 import os
+from pprint import pprint
 from typing import Any, Dict, Optional
 
 from backend.graph.workflow_graph import enterprise_workflow
@@ -34,19 +35,20 @@ class Planner:
             execution_plan = execution_plan.model_dump()
 
         state: WorkflowState = {
+            # Request
             "workflow": workflow,
             "mode": mode,
             "incident": incident,
             "case_id": case_id,
             "overrides": overrides or {},
 
-            # Planner output
+            # Planner
             "execution_plan": execution_plan,
 
             # Incident
             "parsed_incident": {},
 
-            # Datasource aggregation
+            # Datasource
             "datasource_context": {},
 
             # Weak Signal
@@ -60,76 +62,80 @@ class Planner:
             # Recommendation
             "recommendation_report": None,
 
-            # -------- Phase 4 --------
+            # Phase 4
             "simulation_report": None,
             "decision_scores": None,
             "cost_report": None,
             "timeline_report": None,
             "scenario_comparison": None,
-            # -------------------------
 
             # Explainability
             "explainability_report": None,
 
-            # Execution trace
+            # Execution Trace
             "executed_agents": [],
             "skipped_agents": [],
 
-            # Final response
+            # Final Response
             "response": None,
 
-            # -------------------------
             # Human-in-the-Loop
-            # -------------------------
-
             "review_required": execution_plan.get(
                 "requires_human_review",
                 False,
             ),
-
             "review_status": None,
-
             "reviewer": None,
-
             "reviewer_role": None,
-
             "review_comments": None,
-
             "approved_recommendation": None,
-
             "review_timestamp": None,
-
             "audit_log": [],
         }
 
         result = self.workflow.invoke(state)
-        # Human-in-the-Loop pause
-        if (
-            result.get("review_required")
-            and result.get("review_status") is None
-        ):
-            return {
-                "status": "WAITING_FOR_HUMAN_REVIEW",
-                "case_id": result.get("case_id"),
-                "planner": result.get("execution_plan"),
-                "recommendation": result.get("recommendation_report"),
-                "explainability": result.get("explainability_report"),
-                "message": "Awaiting human approval."
-            }
 
-        # Normal execution
+        # ---------------- DEBUG ----------------
+
+        print("\n===== LANGGRAPH RESULT KEYS =====")
+        pprint(result.keys())
+
+        print("\n===== DEBUG =====")
+        print("risk_report:", result.get("risk_report") is not None)
+        print("simulation_report:", result.get("simulation_report") is not None)
+        print("decision_scores:", result.get("decision_scores") is not None)
+        print("cost_report:", result.get("cost_report") is not None)
+        print("timeline_report:", result.get("timeline_report") is not None)
+        print("scenario_comparison:", result.get("scenario_comparison") is not None)
+
+        if result.get("response"):
+            print("\n===== RESPONSE KEYS =====")
+            pprint(result["response"].keys())
+
+        # ---------------------------------------
+
+        # If workflow paused for Human Review,
+        # return exactly what HumanReviewNode created.
+        if (
+            result.get("response")
+            and result["response"].get("status") == "WAITING_FOR_HUMAN_REVIEW"
+        ):
+            return result["response"]
+
+        # Normal completion
         if result.get("response") is not None:
             return result["response"]
 
         return result
-def resume_after_review(
-    self,
-    state: WorkflowState,
-):
 
-    result = self.workflow.invoke(state)
+    def resume_after_review(
+        self,
+        state: WorkflowState,
+    ):
 
-    if result.get("response") is not None:
-        return result["response"]
+        result = self.workflow.invoke(state)
 
-    return result
+        if result.get("response") is not None:
+            return result["response"]
+
+        return result

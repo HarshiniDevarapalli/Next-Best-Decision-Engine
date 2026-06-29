@@ -1,9 +1,12 @@
 # backend/test_phase4.py
+
+from pprint import pprint
+
 from dotenv import load_dotenv
 
 load_dotenv()
-from backend.planner.planner import Planner
 
+from backend.planner.planner import Planner
 
 planner = Planner()
 
@@ -24,29 +27,11 @@ print("=" * 80)
 print("PHASE 4 TEST")
 print("=" * 80)
 
-print("\nPlanner")
-print(result["planner"])
+print("\nReturned object type:")
+print(type(result))
 
-print("\nRisk")
-print(result["risk"])
+print("\nReturned keys:")
+print(list(result.keys()))
 
-print("\nRecommendation")
-print(result["recommendation"])
-
-print("\nSimulation")
-print(result["simulation"])
-
-print("\nDecision Scoring")
-print(result["decision_scoring"])
-
-print("\nCost Analysis")
-print(result["cost_analysis"])
-
-print("\nTimeline Prediction")
-print(result["timeline_prediction"])
-
-print("\nScenario Comparison")
-print(result["scenario_comparison"])
-
-print("\nExplainability")
-print(result["explainability"])
+print("\nFull Result:")
+pprint(result)
