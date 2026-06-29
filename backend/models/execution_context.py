@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-from models.agent_result import AgentResult
+from backend.models.agent_result import AgentResult
 
 
 class ExecutionContext(BaseModel):

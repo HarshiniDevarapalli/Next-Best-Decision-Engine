@@ -1,65 +1,166 @@
-from fastapi import APIRouter
+from datetime import datetime
 
-from models.request import WorkflowRequest
-from planner.planner import Planner
-from planner.workflow_loader import WorkflowLoader
-from registry.registry import AgentRegistry
+from fastapi import APIRouter, HTTPException
 
-# Datasource agents
-from agents.datasource.supplier_contract_agent import SupplierContractAgent
-from agents.datasource.inventory_agent import InventoryAgent
-from agents.datasource.vendor_agent import VendorAgent
-from agents.datasource.policy_agent import PolicyAgent
-from agents.datasource.news_agent import NewsAgent
-from agents.datasource.incident_history_agent import IncidentHistoryAgent
+from backend.models.request import WorkflowRequest
+from backend.models.review import (
+    HumanReviewRequest,
+    HumanReviewResponse,
+)
+from backend.planner.planner import Planner
+from backend.services.human_review_service import HumanReviewService
 
-# Reasoning agents
-from agents.reasoning.weak_signal_agent import WeakSignalAgent
-from agents.reasoning.risk_agent import RiskAssessmentAgent
-from agents.reasoning.recommendation_agent import RecommendationAgent
-from agents.reasoning.explainability_agent import ExplainabilityAgent
 
 router = APIRouter()
 
-# -----------------------------------
-# Platform Initialization
-# -----------------------------------
+# ---------------------------------------------------------------
+# In-memory state store.
+#
+# Keyed by case_id. Holds the full LangGraph WorkflowState dict for
+# any run that is currently paused and waiting on human review, so
+# that a later /review/submit call can resume it from where it left
+# off. This is intentionally simple (no database) for the hackathon
+# timeline - replace with Redis/DB for real persistence.
+# ---------------------------------------------------------------
+workflow_store: dict = {}
 
-workflow_loader = WorkflowLoader()
-registry = AgentRegistry()
+planner = Planner()
 
-# Register datasource agents
-registry.register(SupplierContractAgent())
-registry.register(InventoryAgent())
-registry.register(VendorAgent())
-registry.register(PolicyAgent())
-registry.register(NewsAgent())
-registry.register(IncidentHistoryAgent())
 
-# Register reasoning agents
-registry.register(WeakSignalAgent())
-registry.register(RiskAssessmentAgent())
-registry.register(RecommendationAgent())
-registry.register(ExplainabilityAgent())
+def _generate_case_id() -> str:
+    return datetime.utcnow().strftime("case_%Y%m%d%H%M%S%f")
 
-planner = Planner(
-    workflow_loader=workflow_loader,
-    agent_registry=registry
-)
 
-# -----------------------------------
-# API Endpoint
-# -----------------------------------
-
-@router.post("/workflow/run")
-def run_workflow(request: WorkflowRequest):
+@router.post("/analyze", tags=["Workflow"])
+def analyze(request: WorkflowRequest):
     """
-    Execute a workflow for a given crisis case.
+    Entry point for running the full enterprise decision workflow.
+
+    Accepts a natural-language incident description (or a case_id
+    for scenario/what_if mode), runs the Planner + LangGraph
+    pipeline, and returns either:
+      - the completed response report, or
+      - a WAITING_FOR_HUMAN_REVIEW payload if the planner decided
+        this incident requires human review before finalizing.
+
+    In the WAITING_FOR_HUMAN_REVIEW case, the full intermediate
+    state is cached under a generated case_id so /review/submit can
+    resume it later.
     """
 
-    context = planner.execute_workflow(
-        workflow_name=request.workflow,
-        case_id=request.case_id
+    case_id = request.case_id or _generate_case_id()
+
+    result = planner.execute(
+        workflow=request.workflow,
+        mode=request.mode,
+        incident=request.incident,
+        case_id=case_id,
+        overrides=request.overrides,
     )
 
-    return context
+    if isinstance(result, dict) and result.get("status") == "WAITING_FOR_HUMAN_REVIEW":
+        raw_state = result.pop("_raw_state", None)
+        workflow_store[case_id] = raw_state
+        result["case_id"] = case_id
+        return result
+
+    return {
+        "case_id": case_id,
+        "status": "COMPLETED",
+        "result": result,
+    }
+
+
+@router.post(
+    "/review/submit",
+    response_model=HumanReviewResponse,
+    tags=["Human Review"],
+)
+def submit_review(request: HumanReviewRequest):
+    """
+    Record a human reviewer's decision (approve / reject / revise)
+    for a case that is currently paused awaiting review, then
+    resume the workflow to produce the final response.
+    """
+
+    if request.case_id not in workflow_store:
+        raise HTTPException(
+            status_code=404,
+            detail="Workflow not found or not awaiting review.",
+        )
+
+    state = workflow_store[request.case_id]
+
+    state = HumanReviewService.apply_review(
+        state=state,
+        reviewer=request.reviewer,
+        reviewer_role=request.reviewer_role,
+        decision=request.decision,
+        comments=request.comments,
+        updated_recommendation=request.updated_recommendation,
+    )
+
+    final_result = planner.resume_after_review(state)
+
+    workflow_store[request.case_id] = state
+
+    return HumanReviewResponse(
+        case_id=request.case_id,
+        status=state["review_status"],
+        message="Review recorded and workflow resumed successfully.",
+        review_timestamp=datetime.utcnow(),
+    )
+
+
+@router.get("/review/{case_id}", tags=["Human Review"])
+def get_review(case_id: str):
+    """
+    Fetch the current cached state for a case, including its
+    audit log, if it exists in the in-memory store.
+    """
+
+    if case_id not in workflow_store:
+        raise HTTPException(
+            status_code=404,
+            detail="Case not found.",
+        )
+
+    state = workflow_store[case_id]
+
+    return {
+        "case_id": case_id,
+        "review_required": state.get("review_required"),
+        "review_status": state.get("review_status"),
+        "audit_log": state.get("audit_log", []),
+    }
+
+
+@router.post("/review/resume/{case_id}", tags=["Human Review"])
+def resume_workflow(case_id: str):
+    """
+    Re-run the resume step for a case that already has a review
+    decision recorded. Mainly useful if the initial resume call
+    failed and needs to be retried.
+    """
+
+    if case_id not in workflow_store:
+        raise HTTPException(
+            status_code=404,
+            detail="Case not found.",
+        )
+
+    state = workflow_store[case_id]
+
+    if state.get("review_status") is None:
+        raise HTTPException(
+            status_code=400,
+            detail="No review decision recorded yet for this case.",
+        )
+
+    result = planner.resume_after_review(state)
+
+    return {
+        "case_id": case_id,
+        "status": "RESUMED",
+        "result": result,
+    }

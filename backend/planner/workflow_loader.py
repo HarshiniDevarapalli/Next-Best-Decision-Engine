@@ -1,51 +1,47 @@
-import json
-from pathlib import Path
+# backend/planner/workflow_loader.py
 
-from models.workflow import Workflow
+from typing import Any, Dict, List
 
 
 class WorkflowLoader:
     """
-    Loads workflow configurations from JSON files.
+    Dynamically decides which enterprise datasource agents
+    should participate based on the parsed incident.
+
+    No business domains are hardcoded.
     """
 
-    def __init__(self, workflow_directory: str = "data/workflows"):
-        self.workflow_directory = Path(workflow_directory)
+    def __init__(self):
+        self.available_agents = {
+            "supplier_contracts": "SupplierContractAgent",
+            "inventory": "InventoryAgent",
+            "vendors": "VendorAgent",
+            "policies": "PolicyAgent",
+            "news": "NewsAgent",
+            "incident_history": "IncidentHistoryAgent",
+        }
 
-    def load_workflow(self, workflow_name: str) -> Workflow:
-        """
-        Load and validate a workflow configuration.
+    def build_execution_plan(
+        self,
+        parsed_incident: Dict[str, Any],
+    ) -> List[str]:
 
-        Args:
-            workflow_name (str): Name of the workflow.
+        plan: List[str] = []
 
-        Returns:
-            Workflow: Validated workflow object.
+        # Gemini tells us which enterprise sources are useful
+        sources = parsed_incident.get(
+            "recommended_data_sources",
+            []
+        )
 
-        Raises:
-            FileNotFoundError: If workflow JSON does not exist.
-            ValueError: If JSON is invalid.
-        """
+        for source in sources:
+            agent = self.available_agents.get(source)
 
-        workflow_file = self.workflow_directory / f"{workflow_name}.json"
+            if agent and agent not in plan:
+                plan.append(agent)
 
-        if not workflow_file.exists():
-            raise FileNotFoundError(
-                f"Workflow '{workflow_name}' not found."
-            )
+        # Fallback if the LLM couldn't determine sources
+        if not plan:
+            plan = list(self.available_agents.values())
 
-        try:
-            with open(workflow_file, "r", encoding="utf-8") as file:
-                workflow_data = json.load(file)
-
-            return Workflow(**workflow_data)
-
-        except json.JSONDecodeError as e:
-            raise ValueError(
-                f"Invalid JSON in workflow '{workflow_name}': {e}"
-            )
-
-        except Exception as e:
-            raise ValueError(
-                f"Failed to load workflow '{workflow_name}': {e}"
-            )
+        return plan

@@ -1,39 +1,64 @@
-import json
-from pathlib import Path
+# backend/agents/datasource/news_agent.py
 
-from agents.base_agent import BaseAgent
-from models.execution_context import ExecutionContext
-from models.agent_result import AgentResult
+from typing import Any, Dict, List
+
+from backend.agents.datasource.base_datasource_agent import BaseDatasourceAgent
 
 
-class NewsAgent(BaseAgent):
+class NewsAgent(BaseDatasourceAgent):
+    """
+    Enterprise News Intelligence Agent
+    """
 
-    @property
-    def name(self):
-        return "news"
+    DATASOURCE = "news"
 
-    @property
-    def description(self):
-        return "Retrieve news related to the crisis."
+    def __init__(self):
+        super().__init__("NewsAgent")
 
-    def execute(self, context: ExecutionContext) -> AgentResult:
+    def analyze(
+        self,
+        records: List[Dict[str, Any]],
+        parsed_incident: Dict[str, Any],
+    ) -> Dict[str, Any]:
 
-        data_path = Path("data/news.json")
+        relevant_articles = []
+        external_events = []
+        supplier_alerts = []
+        regulatory_updates = []
+        market_impacts = []
+        identified_risks = []
+        insights = []
 
-        with open(data_path, "r") as file:
-            news = json.load(file)
+        for record in records:
 
-        article = next(
-            (
-                item
-                for item in news
-                if item["case_id"] == context.case_id
-            ),
-            {}
-        )
+            relevant_articles.append(record)
 
-        return AgentResult(
-            agent_name=self.name,
-            status="SUCCESS",
-            data=article
-        )
+            if record.get("event"):
+                external_events.append(record["event"])
+
+            if record.get("supplier_alert"):
+                supplier_alerts.append(record["supplier_alert"])
+
+            if record.get("regulation"):
+                regulatory_updates.append(record["regulation"])
+
+            if record.get("market_impact"):
+                market_impacts.append(record["market_impact"])
+
+            if record.get("risk"):
+                identified_risks.append(record["risk"])
+
+        if external_events:
+            insights.append(
+                f"{len(external_events)} external events may impact the supply chain."
+            )
+
+        return {
+            "relevant_articles": relevant_articles,
+            "external_events": external_events,
+            "supplier_alerts": supplier_alerts,
+            "regulatory_updates": regulatory_updates,
+            "market_impacts": market_impacts,
+            "identified_risks": identified_risks,
+            "insights": insights,
+        }

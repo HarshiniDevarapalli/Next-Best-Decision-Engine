@@ -1,72 +1,92 @@
-"""
-llm_detector.py
+# backend/services/weak_signal/llm_detector.py
 
-LLM-backed Weak Signal Detector.
-
-The detector is responsible only for:
-1. Building prompts
-2. Calling the LLM client
-3. Parsing the response
-
-The actual LLM provider (Gemini today, Groq tomorrow)
-is hidden behind GeminiClient.
-"""
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate
 
 
-import time
+class LLMWeakSignalDetector:
+    """
+    LLM-based weak signal detector.
 
-from services.llm.gemini_client import GeminiClient
+    Uses Gemini to identify emerging weak signals from an incident and
+    enterprise context.
+    """
 
-from .base_detector import WeakSignalDetector
-from .prompt import SYSTEM_PROMPT, build_prompt
-from .parser import WeakSignalParser
-from .schemas import WeakSignalReport
+    def __init__(self, api_key: str):
 
+        self.llm = ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash",
+            google_api_key=api_key,
+            temperature=0,
+        )
 
-class LLMWeakSignalDetector(WeakSignalDetector):
+        self.prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    """
+You are an Enterprise Weak Signal Detection Agent.
 
-    def __init__(self):
+Your job is to identify early warning indicators from an enterprise incident.
 
-        self.client = GeminiClient()
+Analyze:
+- the incident
+- parsed incident information
+- enterprise context
 
-    @property
-    def detector_name(self):
+Identify:
+- weak signals
+- emerging risks
+- signal confidence
+- signal category
+- supporting evidence
 
-        return "Gemini Weak Signal Detector"
+Do NOT:
+- recommend actions
+- calculate business risk
+- estimate financial impact
+- explain recommendations
 
-    @property
-    def model_version(self):
+Respond ONLY with valid JSON.
+""",
+                ),
+                (
+                    "human",
+                    """
+Incident:
+{incident}
 
-        return self.client.model
+Parsed Incident:
+{parsed_incident}
 
-    
-    def predict(
+Enterprise Context:
+{enterprise_context}
+""",
+                ),
+            ]
+        )
+
+        self.chain = self.prompt | self.llm
+
+    def detect(
         self,
-        transcript: str
-    ) -> WeakSignalReport:
+        *,
+        incident: str,
+        parsed_incident: dict,
+        context: dict,
+        planner_context: dict | None = None,
+    ):
 
-        start = time.perf_counter()
-
-        raw_response = self.client.generate_json(
-
-            system_prompt=SYSTEM_PROMPT,
-
-            user_prompt=build_prompt(transcript)
-
+        response = self.chain.invoke(
+            {
+                "incident": incident,
+                "parsed_incident": parsed_incident,
+                "enterprise_context": context,
+            }
         )
 
-        processing_time = (
-            time.perf_counter() - start
-        ) * 1000
+        # If Gemini returns plain text
+        if hasattr(response, "content"):
+            return response.content
 
-        return WeakSignalParser.parse(
-
-            response=raw_response,
-
-            detector_name=self.detector_name,
-
-            model_version=self.model_version,
-
-            processing_time_ms=processing_time
-
-        )
+        return response

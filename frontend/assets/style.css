@@ -1,0 +1,196 @@
+/* =======================================================
+   Enterprise Decision Intelligence Platform
+   ======================================================= */
+
+html,
+body,
+[class*="css"] {
+    font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+/* Hide Streamlit Branding */
+#MainMenu {
+    visibility: hidden;
+}
+
+footer {
+    visibility: hidden;
+}
+
+header {
+    visibility: hidden;
+}
+
+/* Main background */
+.stApp {
+    background: #0f172a;
+    color: #ffffff;
+}
+
+/* Title Card */
+
+.title-card {
+    background: linear-gradient(135deg,#2563eb,#4f46e5);
+    padding: 30px;
+    border-radius: 18px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 25px rgba(0,0,0,.35);
+}
+
+.title-card h1{
+    color:white;
+    font-size:40px;
+    margin-bottom:8px;
+}
+
+.title-card p{
+    color:#dbeafe;
+    font-size:18px;
+}
+
+/* Cards */
+
+.card{
+    background:#1e293b;
+    border-radius:18px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0 6px 18px rgba(0,0,0,.25);
+    border:1px solid #334155;
+}
+
+/* Metrics */
+
+[data-testid="stMetric"]{
+    background:#1e293b;
+    border-radius:15px;
+    padding:18px;
+    border:1px solid #334155;
+    box-shadow:0 4px 12px rgba(0,0,0,.25);
+}
+
+/* Buttons */
+
+.stButton>button{
+
+    width:100%;
+
+    background:linear-gradient(90deg,#2563eb,#4f46e5);
+
+    color:white;
+
+    border:none;
+
+    border-radius:12px;
+
+    padding:12px;
+
+    font-weight:700;
+
+    transition:.25s;
+}
+
+.stButton>button:hover{
+
+    transform:translateY(-2px);
+
+    box-shadow:0 8px 18px rgba(79,70,229,.45);
+
+}
+
+/* Sidebar */
+
+section[data-testid="stSidebar"]{
+    background:#111827;
+}
+
+section[data-testid="stSidebar"] h1,
+section[data-testid="stSidebar"] h2,
+section[data-testid="stSidebar"] h3{
+    color:white;
+}
+
+/* Expanders */
+
+.streamlit-expanderHeader{
+    font-weight:600;
+}
+
+/* Tables */
+
+table{
+    border-radius:10px;
+}
+
+/* Alerts */
+
+.success-card{
+
+    background:#14532d;
+
+    border-left:6px solid #22c55e;
+
+    padding:15px;
+
+    border-radius:12px;
+
+}
+
+.warning-card{
+
+    background:#78350f;
+
+    border-left:6px solid #f59e0b;
+
+    padding:15px;
+
+    border-radius:12px;
+
+}
+
+.danger-card{
+
+    background:#7f1d1d;
+
+    border-left:6px solid #ef4444;
+
+    padding:15px;
+
+    border-radius:12px;
+
+}
+
+/* Section Headers */
+
+.section-title{
+
+    font-size:26px;
+
+    font-weight:700;
+
+    margin-top:20px;
+
+    margin-bottom:15px;
+
+}
+
+/* Divider */
+
+hr{
+    border:1px solid #334155;
+}
+
+/* Scrollbars */
+
+::-webkit-scrollbar{
+    width:10px;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#475569;
+    border-radius:8px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+    background:#64748b;
+}
